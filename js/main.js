@@ -12,7 +12,7 @@ import { createDecor } from './world/decor.js';
 import { createExtras } from './world/extras.js';
 import { createTerrace, isUp, STARS_PER_ANSWER, RESCUE_STEPS } from './world/terrace.js';
 import { createForest, GATES, BRANCHES } from './world/forest.js';
-import { initControls, getMove, takeYaw, setControlsEnabled } from './controls.js';
+import { initControls, getMove, takeYaw, setControlsEnabled, controlsEnabled, takeClick } from './controls.js';
 import { openQuiz, isQuizOpen, retranslateQuiz } from './ui/quiz.js';
 import { initPanels, openShop, openAlbum, openDaily, openProgress } from './ui/panels.js';
 import { initPractice, openPractice } from './ui/practice.js';
@@ -969,6 +969,59 @@ function setupInstall() {
 }
 
 // ---------- walking ----------
+// Click to walk (laptops): the child walks to the clicked spot on the floor and stops there,
+// or earlier if a wall, a door or furniture is in the way. Keys or the joystick take over at once.
+const walk = { to: null, marker: null, checkAt: 0, from: null };
+const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+const clickRay = new THREE.Raycaster();
+
+function makeWalkMarker() {
+  const m = new THREE.Mesh(new THREE.RingGeometry(0.22, 0.34, 28), new THREE.MeshBasicMaterial({ color: '#ffd23d', transparent: true, opacity: 0.9, depthWrite: false }));
+  m.rotation.x = -Math.PI / 2;
+  m.visible = false;
+  scene.add(m);
+  return m;
+}
+
+function stopWalk() {
+  walk.to = null;
+  if (walk.marker) walk.marker.visible = false;
+}
+
+function useClick() {
+  const c = takeClick();
+  if (!c || !playing || forest.holds() || !controlsEnabled()) return;
+  const ndc = new THREE.Vector2((c.x / innerWidth) * 2 - 1, -(c.y / innerHeight) * 2 + 1);
+  clickRay.setFromCamera(ndc, camera);
+  ground.constant = -pos.y;
+  const hit = new THREE.Vector3();
+  if (!clickRay.ray.intersectPlane(ground, hit)) return;      // clicked the sky
+  if (Math.hypot(hit.x - pos.x, hit.z - pos.z) > 40) return;
+  const spot = { x: hit.x, z: hit.z };
+  forest.constrain(spot, 0);                                   // in the forest, the nearest point on the path
+  walk.to = spot;
+  walk.from = { x: pos.x, z: pos.z };
+  walk.checkAt = simTime + 0.7;
+  walk.marker ||= makeWalkMarker();
+  walk.marker.position.set(spot.x, pos.y + 0.03, spot.z);
+  walk.marker.visible = true;
+}
+
+// how the child should move this frame to follow a click (world x, z, already in walking speed), or null
+function walkStep() {
+  if (!walk.to) return null;
+  const dx = walk.to.x - pos.x, dz = walk.to.z - pos.z, d = Math.hypot(dx, dz);
+  if (d < 0.25) { stopWalk(); return null; }
+  if (simTime >= walk.checkAt) {
+    // hardly moved: something is in the way, so stop here
+    if (Math.hypot(pos.x - walk.from.x, pos.z - walk.from.z) < 0.2) { stopWalk(); return null; }
+    walk.from = { x: pos.x, z: pos.z };
+    walk.checkAt = simTime + 0.7;
+  }
+  const s = SETTINGS.WALK_SPEED * Math.min(1, d / 0.6);
+  return { x: (dx / d) * s, z: (dz / d) * s };
+}
+
 function updatePlayer(dt) {
   const turned = takeYaw(dt);
   yaw += turned;
@@ -984,10 +1037,13 @@ function updatePlayer(dt) {
     if (forest.climbing || (Math.hypot(vel.x, vel.y) > 0.5 && simTime - lastTurn > HAND_TURN_SECONDS)) yaw += off * Math.min(1, dt * 2);
   }
   const mv = playing && !forest.holds() ? getMove() : { x: 0, y: 0 };
+  useClick();
+  if (mv.x || mv.y || forest.holds() || !controlsEnabled()) stopWalk();
   const fx = -Math.sin(yaw), fz = -Math.cos(yaw);       // forward on the ground
   const rx = Math.cos(yaw), rz = -Math.sin(yaw);        // right on the ground
-  const tx = (rx * mv.x + fx * mv.y) * SETTINGS.WALK_SPEED;
-  const tz = (rz * mv.x + fz * mv.y) * SETTINGS.WALK_SPEED;
+  const auto = walkStep();
+  const tx = auto ? auto.x : (rx * mv.x + fx * mv.y) * SETTINGS.WALK_SPEED;
+  const tz = auto ? auto.z : (rz * mv.x + fz * mv.y) * SETTINGS.WALK_SPEED;
   const k = Math.min(1, dt * 10);
   vel.x += (tx - vel.x) * k;
   vel.y += (tz - vel.y) * k;
@@ -1005,6 +1061,7 @@ function updatePlayer(dt) {
     facing += diff * Math.min(1, dt * 12);
   }
   facing = forest.facing() ?? facing;
+  if (walk.marker?.visible) walk.marker.scale.setScalar(1 + Math.sin(simTime * 6) * 0.12);
   pos.y += ((forest.height() ?? floorHeight(pos.x, pos.z)) - pos.y) * Math.min(1, dt * 14);
   player.root.position.copy(pos);
   player.root.rotation.y = facing;

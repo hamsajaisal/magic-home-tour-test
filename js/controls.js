@@ -1,7 +1,9 @@
 // Keyboard (arrows / WASD, Q/E to turn), on-screen joystick for phones, and drag-to-turn camera.
 const keys = new Set();
 const joy = { active: false, id: null, ox: 0, oy: 0, x: 0, y: 0 };
-const drag = { id: null, lastX: 0 };
+const drag = { id: null, lastX: 0, x0: 0, y0: 0, t0: 0, far: false, mouse: false };
+let click = null;          // a mouse click on the 3D view (not a drag), waiting to be used as "walk here"
+const CLICK_PX = 6;        // moving less than this between press and release still counts as a click
 let yawDelta = 0;
 let turnButtons = 0;
 let enabled = true;
@@ -52,14 +54,24 @@ export function initControls({ onAction }) {
   zone.addEventListener('pointercancel', endJoy);
 
   // drag on the 3D view (the half without the joystick on phones, anywhere with a mouse) turns the camera
-  canvas.addEventListener('pointerdown', (e) => { drag.id = e.pointerId; drag.lastX = e.clientX; try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ } });
+  canvas.addEventListener('pointerdown', (e) => {
+    Object.assign(drag, { id: e.pointerId, lastX: e.clientX, x0: e.clientX, y0: e.clientY, t0: performance.now(), far: false, mouse: e.pointerType !== 'touch' });
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+  });
   canvas.addEventListener('pointermove', (e) => {
     if (e.pointerId !== drag.id) return;
     yawDelta -= (e.clientX - drag.lastX) * 0.008;
     drag.lastX = e.clientX;
+    if (Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) > CLICK_PX) drag.far = true;
   });
   const endDrag = (e) => { if (e.pointerId === drag.id) drag.id = null; };
-  canvas.addEventListener('pointerup', endDrag);
+  // with a mouse, a quick click (not a drag) means "walk there"; phones keep the joystick
+  canvas.addEventListener('pointerup', (e) => {
+    if (e.pointerId === drag.id && drag.mouse && !drag.far && e.button === 0 && performance.now() - drag.t0 < 600 && enabled) {
+      click = { x: e.clientX, y: e.clientY };
+    }
+    endDrag(e);
+  });
   canvas.addEventListener('pointercancel', endDrag);
 
   const hold = (id, dir) => {
@@ -81,7 +93,16 @@ function resetJoystick() {
 
 export function setControlsEnabled(on) {
   enabled = on;
-  if (!on) { keys.clear(); resetJoystick(); turnButtons = 0; }
+  if (!on) { keys.clear(); resetJoystick(); turnButtons = 0; click = null; }
+}
+
+export function controlsEnabled() { return enabled; }
+
+// the last mouse click on the 3D view, once
+export function takeClick() {
+  const c = click;
+  click = null;
+  return c;
 }
 
 // x = right, y = forward (both -1 … 1)
