@@ -832,6 +832,19 @@ function startPlaying() {
 
 function setupUI() {
   initControls({ onAction: act });
+  // Alt+1 … Alt+6 press the six buttons at the top, in the order they sit (also told to screen readers)
+  const TOP = ['shop-btn', 'album-btn', 'progress-btn', 'lang-btn', 'sound-btn', 'settings-btn'];
+  TOP.forEach((id, i) => $(id).setAttribute('aria-keyshortcuts', `Alt+${i + 1}`));
+  addEventListener('keydown', (e) => {
+    if (!e.altKey || e.ctrlKey || e.metaKey) return;
+    const i = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6'].indexOf(e.code);
+    if (i < 0 || !playing) return;
+    e.preventDefault();
+    const id = TOP[i];
+    // language and sound work any time; the panels open only when nothing else is open
+    if (id !== 'lang-btn' && id !== 'sound-btn' && (isQuizOpen() || anyPanelOpen())) return;
+    $(id).click();
+  });
   initPanels({ onBuy: buy, onWear: wear, onOpen: () => { hidePrompt(); setTip(''); setControlsEnabled(false); } });
   onLangChange(() => {
     refreshAll();

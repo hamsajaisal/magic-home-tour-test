@@ -38,7 +38,7 @@
   "later": "Later",
   "coinsEarned": "+{c} coins",
   "noQuestions": "There are no questions for this room yet.",
-  "controlsDesktop": "Walk: click on the floor, or arrow keys / WASD · Turn camera: drag the mouse or Q / E",
+  "controlsDesktop": "Walk: click on the floor, or arrow keys / WASD · Turn camera: drag the mouse or Q / E · Top buttons: Alt+1 to Alt+6",
   "controlsTouch": "Drag on the left side to walk · drag on the right side to turn the camera",
   "settings": "Settings",
   "lowGraphics": "Low graphics (for slow phones)",
