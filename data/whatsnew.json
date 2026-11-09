@@ -2,6 +2,11 @@
   "_help": "The list behind the What's New button, newest first. Add a line at the top each time something big reaches the main site: only what is live there, not what is still on the test site. Lines with the same date show together.",
   "items": [
     {
+      "date": "2026-11-10",
+      "ml": "സ്ക്രീൻ റീഡർ ഉപയോഗിക്കുന്നവർക്ക്: കളിക്കുമ്പോൾ കീകൾ നേരെ ഗെയിമിൽ എത്തും, പേജുകൾ തുറക്കുന്നതും ചോദ്യങ്ങളും വാതിലിനടുത്തെ സന്ദേശങ്ങളും നാണയം കിട്ടുന്നതും വായിക്കും, Escape കൊണ്ട് പേജ് അടയ്ക്കാം.",
+      "en": "For screen reader users: keys go straight to the game, and pages, questions, messages at doors and coins received are read out. Escape closes a page."
+    },
+    {
       "date": "2026-11-09",
       "ml": "ലാപ്ടോപ്പിൽ മുകളിലെ ആറ് ബട്ടണുകൾക്ക് ഷോർട്ട്കട്ടുകൾ: Alt+1 കട, Alt+2 ആൽബം, Alt+3 എന്റെ പുരോഗതി, Alt+4 ഭാഷ, Alt+5 ശബ്ദം, Alt+6 Settings.",
       "en": "Keyboard shortcuts on laptops for the six top buttons: Alt+1 shop, Alt+2 album, Alt+3 My Progress, Alt+4 language, Alt+5 sound, Alt+6 Settings."
