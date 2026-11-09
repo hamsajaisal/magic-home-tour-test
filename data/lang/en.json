@@ -248,6 +248,8 @@
   "slateLines": "Squares on the slate",
   "slateBig": "Bigger slate",
   "slateClose": "Show the question big",
+  "srGameArea": "Game. You are in front of the house.",
+  "srCoinsGot": "You got {c} coins.",
   "srPromptKey": "Press Enter for: {go}",
   "srLangNow": "Language: English",
   "srSoundOn": "Sound on",

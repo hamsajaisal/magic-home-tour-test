@@ -723,7 +723,10 @@ function refreshHUD() {
   $('quiz-lang').textContent = t('switchTo');
   $('sound-btn').textContent = save.settings.sound ? '🔊' : '🔇';
   $('start-stats').textContent = save.xp ? `🪙 ${save.coins} · ⭐ ${t('level')} ${level()} · 🚪 ${open}/${rooms.length}` : '';
-  document.querySelectorAll('[data-lang]').forEach((b) => b.classList.toggle('active', b.dataset.lang === lang()));
+  document.querySelectorAll('[data-lang]').forEach((b) => {
+    b.classList.toggle('active', b.dataset.lang === lang());
+    b.setAttribute('aria-pressed', String(b.dataset.lang === lang()));
+  });
 }
 
 function refreshSigns() {
@@ -814,8 +817,15 @@ function changeLang(l) {
   setLang(l);
 }
 
+// keyboard focus goes to the game itself, so screen readers hand the keys to the game
+function focusGame() {
+  $('game').setAttribute('aria-label', `${t('srGameArea')} ${controlsTip()}`);
+  $('game').focus({ preventScroll: true });
+}
+
 function startPlaying() {
   playing = true;
+  focusGame();
   setTip(controlsTip());
   setTimeout(() => { if ($('tip').textContent === controlsTip()) setTip(''); }, 12000);
   const daily = dailyCheck();
@@ -825,7 +835,9 @@ function startPlaying() {
   if (rooms.some((r) => roomState(r.id).unlocked)) callFromTerrace(60000);
   if (daily) {
     openDaily(daily, () => {
+      const before = save.coins;
       claimDaily();
+      announce(t('srCoinsGot', { c: save.coins - before }));
       play('unlock');
       confetti(100, ['🪙', '🔥', '⭐']);
       setControlsEnabled(true);
@@ -862,7 +874,7 @@ function setupUI() {
     if (prompt) showPrompt(prompt);
     if (playing && !$('tip').classList.contains('hidden')) setTip(walked < 3 ? controlsTip() : t('goToDoor'));
   });
-  document.querySelectorAll('[data-lang]').forEach((b) => b.addEventListener('click', () => { play('click'); changeLang(b.dataset.lang); }));
+  document.querySelectorAll('[data-lang]').forEach((b) => b.addEventListener('click', () => { play('click'); changeLang(b.dataset.lang); announce(t('srLangNow')); }));
   $('lang-btn').addEventListener('click', () => { play('click'); changeLang(lang() === 'ml' ? 'en' : 'ml'); announce(t('srLangNow')); });
   $('quiz-lang').addEventListener('click', () => { play('click'); changeLang(lang() === 'ml' ? 'en' : 'ml'); });
   $('play-btn').addEventListener('click', () => {
@@ -965,7 +977,7 @@ function setupUI() {
     setControlsEnabled(!isQuizOpen() && !anyPanelOpen());
   }));
   applyToPage();
-  initDialogs(PANELS);
+  initDialogs(PANELS, { watch: ['quiz'], whenClosed: () => { if (playing && !isQuizOpen() && !anyPanelOpen()) focusGame(); } });
 }
 
 // ---------- play without internet, and "Add to home screen" ----------

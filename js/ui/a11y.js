@@ -11,7 +11,7 @@ export function announce(text) {
 
 // The panels behave like dialogs: opening one moves the screen reader to its heading
 // (which reads the panel's name), Escape closes the top one, and closing returns to where you were.
-export function initDialogs(ids) {
+export function initDialogs(ids, { whenClosed, watch = [] } = {}) {
   const back = new Map();   // panel id -> what had focus before it opened
   const shown = (el) => !el.classList.contains('hidden');
   for (const id of ids) {
@@ -37,8 +37,34 @@ export function initDialogs(ids) {
       } else {
         const b = back.get(id);
         back.delete(id);
-        if (b && document.contains(b) && b.offsetParent !== null) b.focus({ preventScroll: true });
+        const others = ids.some((o) => o !== id && shown(document.getElementById(o)));
+        if (others) return;
+        if (b && document.contains(b) && b.offsetParent !== null && b !== document.body) b.focus({ preventScroll: true });
+        else whenClosed?.();
       }
+    }).observe(el, { attributes: true, attributeFilter: ['class'] });
+  }
+  // A question: the screen reader goes to the question text, and again for each new question.
+  const qText = document.getElementById('q-text');
+  const focusQuestion = () => {
+    if (!qText || qText.offsetParent === null) return;
+    qText.tabIndex = -1;
+    qText.focus({ preventScroll: true });
+  };
+  let lastQ = '';
+  if (qText) new MutationObserver(() => {
+    if (qText.textContent && qText.textContent !== lastQ) { lastQ = qText.textContent; setTimeout(focusQuestion, 30); }
+  }).observe(qText, { childList: true, characterData: true, subtree: true });
+  // other screens (the quiz) look after their own focus; when they close, the game takes the keys again
+  for (const id of watch) {
+    const el = document.getElementById(id);
+    let was = shown(el);
+    new MutationObserver(() => {
+      const now = shown(el);
+      if (now === was) return;
+      was = now;
+      if (now) { focusQuestion(); return; }
+      if (!now && (document.activeElement === document.body || !document.activeElement || document.activeElement.offsetParent === null)) whenClosed?.();
     }).observe(el, { attributes: true, attributeFilter: ['class'] });
   }
   addEventListener('keydown', (e) => {
