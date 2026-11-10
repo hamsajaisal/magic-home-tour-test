@@ -27,6 +27,7 @@
   <!-- Start screen -->
   <div id="start" class="screen hidden">
     <div class="start-card">
+      <button id="a11y-btn" class="soft-btn small a11y-btn" aria-pressed="false" data-i18n="a11yButton">Mode for children who cannot see</button>
       <div class="start-emoji">🏡✨</div>
       <h1 data-i18n="title">Magic Home Tour</h1>
       <p class="subtitle" data-i18n="subtitle"></p>
@@ -201,6 +202,7 @@
       <label class="row"><input type="checkbox" id="set-low"> <span data-i18n="lowGraphics"></span></label>
       <label class="row"><input type="checkbox" id="set-sound"> <span data-i18n="sound"></span></label>
       <label class="row"><input type="checkbox" id="set-voice"> <span data-i18n="voiceSetting"></span></label>
+      <label class="row"><input type="checkbox" id="set-a11y"> <span data-i18n="a11ySetting"></span></label>
       <label class="row"><input type="checkbox" id="set-read"> <span data-i18n="readAloudSetting"></span></label>
       <label class="row"><input type="checkbox" id="set-close"> <span data-i18n="closeViewSetting"></span></label>
       <div class="row"><span data-i18n="lipi"></span>
@@ -231,6 +233,44 @@
   </div>
 
   <!-- Credits -->
+  <div id="a11y-intro" class="overlay hidden">
+    <div class="modal-card">
+      <h2 data-i18n="a11yTitle"></h2>
+      <p data-i18n="a11yIntro"></p>
+      <p data-i18n="a11yIntro2"></p>
+      <div class="btn-row">
+        <button class="big-btn" id="a11y-yes" data-i18n="a11yYes"></button>
+        <button class="soft-btn" id="a11y-no" data-i18n="a11yNo"></button>
+      </div>
+    </div>
+  </div>
+
+  <div id="a11y-help" class="overlay hidden">
+    <div class="modal-card">
+      <h2 data-i18n="a11yHelpTitle"></h2>
+      <ul class="a11y-keys">
+        <li data-i18n="a11yKeyWalk"></li>
+        <li data-i18n="a11yKeyTurn"></li>
+        <li data-i18n="a11yKeyWhere"></li>
+        <li data-i18n="a11yKeyGo"></li>
+        <li data-i18n="a11yKeyEnter"></li>
+        <li data-i18n="a11yKeyQuiz"></li>
+        <li data-i18n="a11yKeyEsc"></li>
+        <li data-i18n="a11yKeyAlt"></li>
+        <li data-i18n="a11yKeyHelp"></li>
+      </ul>
+      <button class="big-btn" data-close="a11y-help" data-i18n="close"></button>
+    </div>
+  </div>
+
+  <div id="a11y-goto" class="overlay hidden">
+    <div class="modal-card">
+      <h2 data-i18n="a11yGoTitle"></h2>
+      <div id="a11y-goto-list" class="a11y-goto-list"></div>
+      <button class="big-btn" data-close="a11y-goto" data-i18n="close"></button>
+    </div>
+  </div>
+
   <div id="news" class="overlay hidden">
     <div class="modal-card">
       <h2 data-i18n="whatsNew">What's new?</h2>

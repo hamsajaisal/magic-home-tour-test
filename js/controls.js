@@ -7,6 +7,8 @@ const CLICK_PX = 6;        // moving less than this between press and release st
 let yawDelta = 0;
 let turnButtons = 0;
 let enabled = true;
+let turnMode = false;      // accessibility mode: left/right arrows (and A/D) turn the child, they don't step sideways
+export function setTurnMode(on) { turnMode = on; }
 
 const joyEl = document.getElementById('joystick');
 const knob = document.getElementById('joy-knob');
@@ -111,8 +113,8 @@ export function getMove() {
   let x = 0, y = 0;
   if (keys.has('KeyW') || keys.has('ArrowUp')) y += 1;
   if (keys.has('KeyS') || keys.has('ArrowDown')) y -= 1;
-  if (keys.has('KeyD') || keys.has('ArrowRight')) x += 1;
-  if (keys.has('KeyA') || keys.has('ArrowLeft')) x -= 1;
+  if (!turnMode && (keys.has('KeyD') || keys.has('ArrowRight'))) x += 1;
+  if (!turnMode && (keys.has('KeyA') || keys.has('ArrowLeft'))) x -= 1;
   if (joy.active) { x += joy.x; y += joy.y; }
   const len = Math.hypot(x, y);
   if (len > 1) { x /= len; y /= len; }

@@ -288,11 +288,14 @@ body.touch #tip { bottom: auto; top: 104px; }
   background-size: 34px 34px;
 }
 /* the About page opens over the start screen too, and Credits over About */
-#about, #news { z-index: 55; }
+#about, #news, #a11y-intro, #a11y-help, #a11y-goto { z-index: 55; }
+.a11y-btn { display: block; margin: 0 auto 6px; }
+.a11y-keys { padding-left: 20px; line-height: 1.6; }
+.a11y-goto-list { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; text-align: left; }
 #news-list h3 { margin: 14px 0 4px; font-size: 1rem; }
 #news-list ul { margin: 0; padding-left: 20px; line-height: 1.5; }
 #news-mark { display: inline-block; width: 10px; height: 10px; margin-left: 6px; border-radius: 50%; background: #ff5d8f; vertical-align: middle; }
-.dialog-title:focus, #game:focus, #q-text:focus { outline: none; }
+.dialog-title:focus, #game:focus, #q-text:focus, #r-title:focus { outline: none; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 #credits { z-index: 56; }
 #about p { line-height: 1.5; margin: 8px 0; }

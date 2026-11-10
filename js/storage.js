@@ -14,7 +14,7 @@ function fresh() {
     wrong: {},        // questionId -> times answered wrong (used by the revision room later)
     seen: {},         // questionId -> times shown (game and quiz mode)
     levels: {},       // subject -> difficulty level of its rounds, starts at 1
-    settings: { lowGraphics: null, sound: true, voice: true, lipi: 'old', readAloud: false, joystick: 'left', closeView: false },
+    settings: { lowGraphics: null, sound: true, voice: true, lipi: 'old', readAloud: false, joystick: 'left', closeView: false, a11y: false },
     streak: { count: 0, last: null },   // days in a row
     surpriseDay: {},  // roomId -> date of today's free surprise
     owned: [],        // shop items bought

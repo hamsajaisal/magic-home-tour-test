@@ -168,7 +168,7 @@ function showQuestion() {
   el.next.classList.add('hidden');
   $('q-voice-note').classList.add('hidden');
   stopReading();
-  if (save.settings.readAloud) setTimeout(() => { if (S && S.items[S.index] === item) readQuestion(); }, 350);
+  if (save.settings.readAloud && !save.settings.a11y) setTimeout(() => { if (S && S.items[S.index] === item) readQuestion(); }, 350);
 }
 
 // "Read aloud": the question and the four choices, with their letters
@@ -199,6 +199,7 @@ function feedback(kind, title, body) {
   el.feedback.innerHTML = '<b></b><span></span>';
   el.feedback.firstChild.textContent = title;
   el.feedback.lastChild.textContent = body || '';
+  dispatchEvent(new CustomEvent('quizfeedback', { detail: { kind, title, body } }));
 }
 
 function pickOption(i) {

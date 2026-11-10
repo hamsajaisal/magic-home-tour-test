@@ -23,7 +23,7 @@ function findVoice(lang) {
 
 // kind: praise | tryAgain | pass | fail.  texts: { ml: '…', en: '…' } (the English one is the fallback)
 export function say(kind, lang, texts) {
-  if (save.settings.voice === false || !save.settings.sound) return;
+  if (save.settings.voice === false || !save.settings.sound || save.settings.a11y) return;   // the screen reader speaks in the accessibility mode
   const list = clips[lang]?.[kind];
   if (list?.length) {
     const file = list[Math.floor(Math.random() * list.length)];

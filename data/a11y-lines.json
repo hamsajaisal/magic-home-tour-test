@@ -1,0 +1,269 @@
+{
+  "_help": "Lines the screen reader says in the accessibility mode. Each situation has several lines; one is picked at random. {room}, {place}, {where}, {n} are filled in by the game. Add more lines freely, in both languages.",
+  "welcome": {
+    "ml": [
+      "സ്വാഗതം മുത്തേ! നിങ്ങൾ വീടിന്റെ മുറ്റത്താണ്, മുന്നിൽ വീട്. മോളിലേക്കുള്ള ആരോ കൊണ്ട് മുന്നോട്ട് നടക്കാം. എന്തെങ്കിലും സഹായം വേണമെങ്കിൽ H അമർത്തിക്കോളൂ."
+    ],
+    "en": [
+      "Welcome! You are in the front yard, facing the house. Press the up arrow to walk forward. Press H any time for help."
+    ]
+  },
+  "zone_yard": {
+    "ml": [
+      "ഇപ്പൊ നിങ്ങൾ മുറ്റത്താണ്.",
+      "മുറ്റത്ത് എത്തി. നല്ല കാറ്റുണ്ടല്ലേ!"
+    ],
+    "en": [
+      "You are in the front yard.",
+      "Out in the yard. Nice breeze, isn't it?"
+    ]
+  },
+  "zone_steps": {
+    "ml": [
+      "ശ്രദ്ധിച്ചു കേറണേ! മറിഞ്ഞടിച്ച് വീണ് പൊളിഞ്ഞാൽ എനിക്ക് പണിയാകും.",
+      "ലാപ്പിന്റെ മോളിലേക്ക് മൂക്കും കുത്തി വീഴരുതേ, ശ്രദ്ധിച്ചു കേറ്!",
+      "പടി കേറുകയാണ്, പതുക്കെ മതി, ഓടി വീഴണ്ട!"
+    ],
+    "en": [
+      "Careful on the steps! If you trip and fall, I'll be in trouble.",
+      "Mind the steps, don't fall nose first onto the laptop!",
+      "Climbing the steps. Slowly now!"
+    ]
+  },
+  "zone_veranda": {
+    "ml": [
+      "പൂമുഖത്ത് എത്തി. മുന്നിൽ വീടിന്റെ വാതിൽ.",
+      "ഇത് പൂമുഖമാണ്. നേരെ നടന്നാൽ വീട്ടിനുള്ളിൽ കേറാം."
+    ],
+    "en": [
+      "You are on the veranda. The front door is ahead.",
+      "This is the veranda. Walk straight on to go inside."
+    ]
+  },
+  "zone_hall": {
+    "ml": [
+      "വീട്ടിനുള്ളിൽ എത്തി, ഇത് അകത്തളം. ഇരുവശത്തും മുറികളുണ്ട്.",
+      "അകത്തളത്തിലാണ്. ഇടത്തും വലത്തും മുറികളാണ്, മുന്നിൽ നടുമുറ്റം."
+    ],
+    "en": [
+      "You are inside, in the hall. There are rooms on both sides.",
+      "In the hall. Rooms to the left and right, the courtyard ahead."
+    ]
+  },
+  "zone_courtyard": {
+    "ml": [
+      "ഇപ്പൊ നിങ്ങൾ നടുമുറ്റത്താണ്. നടുക്ക് തുളസിത്തറയുണ്ട്, ചുറ്റും നടന്നോളൂ.",
+      "നടുമുറ്റത്ത് എത്തി. തുളസിത്തറയിൽ മുട്ടാതെ നടന്നോളൂ."
+    ],
+    "en": [
+      "You are in the courtyard. There is a tulsi stand in the middle; walk around it.",
+      "In the courtyard. Mind the tulsi stand!"
+    ]
+  },
+  "zone_backhall": {
+    "ml": [
+      "പിൻവശത്തെ ഹാളിൽ എത്തി. ഇവിടെ നിലവിളക്കും പുനരവലോകന അലമാരയും ഉണ്ട്.",
+      "പിന്നിലെ ഹാളിലാണ്. അലമാരയിൽ നിങ്ങൾക്ക് തെറ്റിയ ചോദ്യങ്ങൾ കാത്തിരിക്കുന്നുണ്ട്!"
+    ],
+    "en": [
+      "You are in the back hall, with the brass lamp and the revision cupboard.",
+      "Back hall. The cupboard keeps the questions you got wrong!"
+    ]
+  },
+  "zone_room": {
+    "ml": [
+      "ഇതാ {room}! അകത്തെത്തി.",
+      "{room} – സ്വാഗതം!"
+    ],
+    "en": [
+      "You are in the {room}.",
+      "Welcome to the {room}!"
+    ]
+  },
+  "zone_garden": {
+    "ml": [
+      "തോട്ടത്തിലാണ്. ചെടികളിൽ ചവിട്ടല്ലേ!",
+      "ഇപ്പൊ തോട്ടത്തിലാണ്."
+    ],
+    "en": [
+      "You are in the garden. Don't step on the plants!",
+      "In the garden now."
+    ]
+  },
+  "zone_stairs": {
+    "ml": [
+      "ടെറസിലേക്കുള്ള പടികളാണ്. ശ്രദ്ധിച്ചു കേറണേ, മോളിലെത്തിയാൽ നല്ല കാഴ്ചയാ!",
+      "പടി കേറുകയാണ്. കൈവരിയിൽ പിടിച്ചോ, ഓടണ്ട!"
+    ],
+    "en": [
+      "These are the stairs to the terrace. Careful now!",
+      "Climbing up. Hold the railing, no running!"
+    ]
+  },
+  "zone_terrace": {
+    "ml": [
+      "ടെറസിൽ എത്തി! ഇവിടെ പട്ടവും ദൂരദർശിനിയും നീന്തൽക്കുളവും ഉണ്ട്.",
+      "അടിപൊളി, ടെറസിലെത്തി!"
+    ],
+    "en": [
+      "You made it to the terrace! There's a kite, a telescope and a pool up here.",
+      "Brilliant, you're on the terrace!"
+    ]
+  },
+  "zone_forest": {
+    "ml": [
+      "കാട്ടിലേക്ക് സ്വാഗതം! വഴിയിലൂടെ മാത്രം നടക്കണേ, പാമ്പുണ്ടാവും!",
+      "കാട്ടിലെ വഴിയിലാണ്. മുന്നോട്ട് പോയാൽ ചോദ്യപ്പലകകൾ കാണാം."
+    ],
+    "en": [
+      "Welcome to the forest! Stay on the path.",
+      "You're on the forest path. Question boards are ahead."
+    ]
+  },
+  "side_room": {
+    "ml": [
+      "{where} {room}. അങ്ങോട്ട് പോകണമെങ്കിൽ {side} തിരിഞ്ഞോളൂ, അല്ലെങ്കിൽ മുറി ചവിട്ടിക്കൂട്ടാതെ മുന്നോട്ട് നടന്നോളൂ.",
+      "{where} {room} ഉണ്ട്. കേറണോ, അതോ മുന്നോട്ട് പോണോ? നിങ്ങളുടെ ഇഷ്ടം!"
+    ],
+    "en": [
+      "The {room} is {where}. Turn {side} to go in, or carry on straight.",
+      "{room} {where}. In you go, or straight on: your choice!"
+    ]
+  },
+  "bump": {
+    "ml": [
+      "അയ്യോ, മുന്നിൽ ചുമരാണ്! മുട്ടി പൊളിച്ച് അലമ്പാക്കരുത്.",
+      "ഠോ! ചുമരിൽ മുട്ടി. ഒന്ന് തിരിഞ്ഞു നോക്ക്.",
+      "ഇങ്ങനെ ഇടിച്ചാൽ ചുമര് പൊളിയും, വേറെ വഴി നോക്കാം!"
+    ],
+    "en": [
+      "Oops, a wall! Don't knock it down.",
+      "Bonk! You hit something. Try turning.",
+      "That's a wall. Let's find another way!"
+    ]
+  },
+  "door_locked": {
+    "ml": [
+      "ഇത് {room} – അതിന്റെ വാതിൽ പൂട്ടിയിരിക്കുന്നു. Enter അമർത്തി ചോദ്യങ്ങൾക്ക് ഉത്തരം പറഞ്ഞാൽ തുറക്കും."
+    ],
+    "en": [
+      "This is the door of the {room}. It is locked. Press Enter and answer the questions to open it."
+    ]
+  },
+  "lamp": {
+    "ml": [
+      "ഇവിടെ നിലവിളക്കുണ്ട്. കൈ ഒന്ന് ചൂടാക്കണമെങ്കിൽ തൊട്ടോളൂ, പക്ഷേ പൊള്ളി എന്ന് പറഞ്ഞ് നിലവിളിച്ച് എന്റെ അടുത്ത് വന്നിട്ട് കാര്യമില്ല!"
+    ],
+    "en": [
+      "The brass lamp is right here. Warm your hands if you like, but don't come crying to me if you get burnt!"
+    ]
+  },
+  "idle": {
+    "ml": [
+      "എന്താണ് ചങ്ങായി അന്തം വിട്ടു നിൽക്കുന്നത്? {hint}",
+      "ഉറങ്ങിപ്പോയോ? {hint}",
+      "നിന്ന് മടുത്തില്ലേ? {hint}"
+    ],
+    "en": [
+      "Why are you standing there, friend? {hint}",
+      "Fallen asleep? {hint}",
+      "Tired of standing still? {hint}"
+    ]
+  },
+  "surprise_idle": {
+    "ml": [
+      "ഇങ്ങനെ നോക്കി നിന്നാൽ സമ്മാനം വേറെ ചങ്ങായിമാർ കൊണ്ടുപോകും കേട്ടോ! വേഗം മണ്ടിപ്പാഞ്ഞുപോയി എടുക്കൂ മുത്തുമണീ!",
+      "എടുക്കൂ എന്റെ മുത്തുമണിയേ! ആരോ കീകൾ കൊണ്ട് ഓടി നടക്ക്!"
+    ],
+    "en": [
+      "If you just stand there, someone else will grab the treats! Run and catch them!",
+      "Go on, catch them! Use the arrow keys to run around!"
+    ]
+  },
+  "room_open": {
+    "ml": [
+      "{room} തുറന്നിരിക്കുന്നു! കിടുക്കി!",
+      "പൊളിച്ചു! {room} തുറന്നു.",
+      "നീ ഒരു പൊളിയാണ് മുത്തേ! {room} ഇപ്പോൾ തുറന്നു.",
+      "തകർത്തു! {room} തുറന്നു. അകത്ത് സമ്മാനപ്പെട്ടി കാത്തിരിക്കുന്നു."
+    ],
+    "en": [
+      "The {room} is open! Amazing!",
+      "Brilliant! The {room} is open.",
+      "You're a star! The {room} is open now.",
+      "Superb! The {room} is open. A gift box is waiting inside."
+    ]
+  },
+  "right": {
+    "ml": [
+      "ശരിയുത്തരം! കിടുക്കി!",
+      "അതുതന്നെ! മിടുക്കൻ, മിടുക്കി!",
+      "ശരി! നീ ഒരു പൊളിയാണ്!"
+    ],
+    "en": [
+      "Correct! Amazing!",
+      "That's it! Well done!",
+      "Right answer! You're a star!"
+    ]
+  },
+  "wrong": {
+    "ml": [
+      "അയ്യോ, തെറ്റിപ്പോയല്ലോ ഡിയർ. സാരമില്ല, ഒരു ക്ലൂ തരാം:",
+      "ഇത് ശരിയായില്ല മുത്തേ. പേടിക്കണ്ട, ഒരു ക്ലൂ ഇതാ:"
+    ],
+    "en": [
+      "Oops, not quite, dear. Never mind, here's a clue:",
+      "Not this one. Don't worry, here's a clue:"
+    ]
+  },
+  "arrived": {
+    "ml": [
+      "എത്തി! ഇതാ {place}.",
+      "ഇതാ എത്തി: {place}."
+    ],
+    "en": [
+      "Here we are: {place}.",
+      "You've reached {place}."
+    ]
+  },
+  "going": {
+    "ml": [
+      "ശരി, {place} – അങ്ങോട്ട് പോകാം. കൂടെ നടന്നോളൂ!",
+      "{place} – ഞാൻ വഴി കാണിക്കാം, വാ!"
+    ],
+    "en": [
+      "Okay, going to {place}. Come along!",
+      "Let's go to {place}. I'll show you the way!"
+    ]
+  },
+  "stuck": {
+    "ml": [
+      "വഴിയിൽ എന്തോ തടസ്സമുണ്ട്. ഒന്ന് തിരിഞ്ഞ് വേറെ വഴി നോക്കാം.",
+      "ഇവിടെ നിന്ന് മുന്നോട്ട് പോകാൻ പറ്റുന്നില്ല. G അമർത്തി വീണ്ടും സ്ഥലം തിരഞ്ഞെടുക്കൂ."
+    ],
+    "en": [
+      "Something is in the way. Let's turn and try another way.",
+      "I can't go further from here. Press G to pick the place again."
+    ]
+  },
+  "zone_steps_down": {
+    "ml": [
+      "പടി ഇറങ്ങുകയാണ്. ഓടിച്ചാടി ഇറങ്ങി മൂക്ക് കുത്തരുതേ!",
+      "പതുക്കെ ഇറങ്ങിക്കോ, മുറ്റത്തേക്കാണ്."
+    ],
+    "en": [
+      "Going down the steps. No jumping!",
+      "Down the steps, slowly, into the yard."
+    ]
+  },
+  "zone_stairs_down": {
+    "ml": [
+      "ടെറസിൽ നിന്ന് പടിയിറങ്ങുകയാണ്. കൈവരിയിൽ പിടിച്ചോ, ഓടിയിറങ്ങണ്ട!",
+      "പടിയിറങ്ങുന്നു. ശ്രദ്ധിച്ച്, ഓരോ പടിയായി."
+    ],
+    "en": [
+      "Going down from the terrace. Hold the railing!",
+      "Down the stairs, one step at a time."
+    ]
+  }
+}

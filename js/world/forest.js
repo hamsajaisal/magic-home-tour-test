@@ -7,7 +7,7 @@ import { mat, labelTexture, emojiTexture, mergeStatic } from './house.js';
 export const GATES = 5;
 export const BRANCHES = 3;
 
-const PATH = [[-19.5, 12], [-34, 12], [-42, 2], [-54, 2], [-62, 14], [-76, 14], [-84, 4], [-98, 4]];
+export const PATH = [[-19.5, 12], [-34, 12], [-42, 2], [-54, 2], [-62, 14], [-76, 14], [-84, 4], [-98, 4]];
 const HALF = 1.9;                     // half the width of the path
 const EDGE = -20.1;                   // west of this line the child is in the forest
 const TREE = { x: -108, z: 4 };

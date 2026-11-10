@@ -55,6 +55,14 @@ export function initDialogs(ids, { whenClosed, watch = [] } = {}) {
   if (qText) new MutationObserver(() => {
     if (qText.textContent && qText.textContent !== lastQ) { lastQ = qText.textContent; setTimeout(focusQuestion, 30); }
   }).observe(qText, { childList: true, characterData: true, subtree: true });
+  // the score at the end of a round: the screen reader goes to its title, then reads on
+  const result = document.getElementById('quiz-result');
+  if (result) new MutationObserver(() => {
+    if (result.classList.contains('hidden')) return;
+    const h = document.getElementById('r-title');
+    h.tabIndex = -1;
+    setTimeout(() => h.focus({ preventScroll: true }), 30);
+  }).observe(result, { attributes: true, attributeFilter: ['class'] });
   // other screens (the quiz) look after their own focus; when they close, the game takes the keys again
   for (const id of watch) {
     const el = document.getElementById(id);

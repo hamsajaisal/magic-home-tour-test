@@ -10,14 +10,15 @@ import { collide } from './world/physics.js';
 import { createSurprises } from './world/surprises.js';
 import { createDecor } from './world/decor.js';
 import { createExtras } from './world/extras.js';
-import { createTerrace, isUp, STARS_PER_ANSWER, RESCUE_STEPS } from './world/terrace.js';
+import { createTerrace, isUp, STARS_PER_ANSWER, RESCUE_STEPS, SPOTS } from './world/terrace.js';
 import { createForest, GATES, BRANCHES } from './world/forest.js';
-import { initControls, getMove, takeYaw, setControlsEnabled, controlsEnabled, takeClick } from './controls.js';
+import { initControls, getMove, takeYaw, setControlsEnabled, controlsEnabled, takeClick, setTurnMode } from './controls.js';
 import { openQuiz, isQuizOpen, retranslateQuiz } from './ui/quiz.js';
 import { initPanels, openShop, openAlbum, openDaily, openProgress } from './ui/panels.js';
 import { initPractice, openPractice } from './ui/practice.js';
 import { initNews } from './ui/news.js';
 import { announce, initDialogs } from './ui/a11y.js';
+import { createA11yMode } from './a11y-mode.js';
 import {
   loadCatalog, addCoins, bumpStat, checkBadges, giveSticker, dailyCheck, level,
   freeSurpriseReady, useFreeSurprise, claimDaily,
@@ -241,6 +242,7 @@ function runQuiz(opts) {
         const d = pendingUnlock;
         pendingUnlock = null;
         openDoor(d);
+        a11yMode?.roomOpened(d.room);
         confetti(160);
         player.cheer();
         toast(t('coinsEarned', { c: SETTINGS.COINS_FOR_UNLOCK }));
@@ -701,7 +703,8 @@ function checkPrompts() {
   if (!prompt && walked > 3 && walked < 4 && !rooms.some((r) => roomState(r.id).unlocked)) setTip(t('goToDoor'));
 }
 
-const PANELS = ['shop', 'album', 'daily', 'settings', 'credits', 'progress', 'about', 'news'];
+const PANELS = ['shop', 'album', 'daily', 'settings', 'credits', 'progress', 'about', 'news', 'a11y-intro', 'a11y-help', 'a11y-goto'];
+let a11yMode = null;
 const anyPanelOpen = () => PANELS.some((id) => !$(id).classList.contains('hidden'));
 
 // ---------- HUD and signs ----------
@@ -819,13 +822,14 @@ function changeLang(l) {
 
 // keyboard focus goes to the game itself, so screen readers hand the keys to the game
 function focusGame() {
-  $('game').setAttribute('aria-label', `${t('srGameArea')} ${controlsTip()}`);
+  $('game').setAttribute('aria-label', save.settings.a11y ? t('srGameAreaA11y') : `${t('srGameArea')} ${controlsTip()}`);
   $('game').focus({ preventScroll: true });
 }
 
 function startPlaying() {
   playing = true;
   focusGame();
+  a11yMode?.started();
   setTip(controlsTip());
   setTimeout(() => { if ($('tip').textContent === controlsTip()) setTip(''); }, 12000);
   const daily = dailyCheck();
@@ -845,7 +849,46 @@ function startPlaying() {
   }
 }
 
+function setupA11y() {
+  a11yMode = createA11yMode({
+    save, persist, lang, pick, announce, pos, rooms, doors: W.doors, roomState, surprises, extras, forest, terraceSpots: SPOTS,
+    colliders: () => W.colliders,
+    getYaw: () => yaw,
+    turn: (d) => { yaw += d; lastTurn = simTime; },
+    playing: () => playing,
+    busy: () => !playing || isQuizOpen() || anyPanelOpen(),
+    walking: () => !!walk.to,
+    stopWalk,
+    walkPath,
+    promptShown: () => !!prompt,
+    openPanel: (id) => { hidePrompt(); setControlsEnabled(false); $(id).classList.remove('hidden'); },
+    closePanel: (id) => { $(id).classList.add('hidden'); setControlsEnabled(!isQuizOpen() && !anyPanelOpen()); },
+  });
+  const show = () => {
+    const onNow = !!save.settings.a11y;
+    document.documentElement.classList.toggle('a11y', onNow);
+    setTurnMode(onNow);
+    $('a11y-btn').setAttribute('aria-pressed', String(onNow));
+    $('set-a11y').checked = onNow;
+  };
+  show();
+  const openIntro = () => { play('click'); $('settings').classList.add('hidden'); $('a11y-intro').classList.remove('hidden'); setControlsEnabled(false); };
+  $('a11y-btn').addEventListener('click', openIntro);
+  $('set-a11y').addEventListener('change', (e) => { e.target.checked = !!save.settings.a11y; openIntro(); });
+  const choose = (v) => {
+    play('click');
+    a11yMode.setOn(v);
+    show();
+    $('a11y-intro').classList.add('hidden');
+    setControlsEnabled(!isQuizOpen() && !anyPanelOpen());
+    if (playing) focusGame();
+  };
+  $('a11y-yes').addEventListener('click', () => choose(true));
+  $('a11y-no').addEventListener('click', () => choose(false));
+}
+
 function setupUI() {
+  setupA11y();
   initControls({ onAction: act });
   // Alt+1 … Alt+6 press the six buttons at the top, in the order they sit (also told to screen readers)
   const TOP = ['shop-btn', 'album-btn', 'progress-btn', 'lang-btn', 'sound-btn', 'settings-btn'];
@@ -1008,7 +1051,7 @@ function setupInstall() {
 // ---------- walking ----------
 // Click to walk (laptops): the child walks to the clicked spot on the floor and stops there,
 // or earlier if a wall, a door or furniture is in the way. Keys or the joystick take over at once.
-const walk = { to: null, marker: null, checkAt: 0, from: null };
+const walk = { to: null, path: [], marker: null, checkAt: 0, from: null, onArrive: null, onStuck: null };
 const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 const clickRay = new THREE.Raycaster();
 
@@ -1022,7 +1065,25 @@ function makeWalkMarker() {
 
 function stopWalk() {
   walk.to = null;
+  walk.path = [];
+  walk.onArrive = walk.onStuck = null;
   if (walk.marker) walk.marker.visible = false;
+}
+
+// walk through these points one after another
+function walkPath(points, { onArrive, onStuck } = {}) {
+  stopWalk();
+  if (!points.length) return;
+  walk.path = points.slice(1);
+  walk.to = points[0];
+  walk.from = { x: pos.x, z: pos.z };
+  walk.checkAt = simTime + 0.9;
+  walk.onArrive = onArrive;
+  walk.onStuck = onStuck;
+  const last = points[points.length - 1];
+  walk.marker ||= makeWalkMarker();
+  walk.marker.position.set(last.x, pos.y + 0.03, last.z);
+  walk.marker.visible = true;
 }
 
 function useClick() {
@@ -1048,14 +1109,21 @@ function useClick() {
 function walkStep() {
   if (!walk.to) return null;
   const dx = walk.to.x - pos.x, dz = walk.to.z - pos.z, d = Math.hypot(dx, dz);
-  if (d < 0.25) { stopWalk(); return null; }
+  const last = !walk.path.length;
+  if (d < (last ? 0.25 : 0.4)) {
+    if (!last) { walk.to = walk.path.shift(); return walkStep(); }
+    const done = walk.onArrive;
+    stopWalk();
+    done?.();
+    return null;
+  }
   if (simTime >= walk.checkAt) {
     // hardly moved: something is in the way, so stop here
-    if (Math.hypot(pos.x - walk.from.x, pos.z - walk.from.z) < 0.2) { stopWalk(); return null; }
+    if (Math.hypot(pos.x - walk.from.x, pos.z - walk.from.z) < 0.2) { const stuck = walk.onStuck; stopWalk(); stuck?.(); return null; }
     walk.from = { x: pos.x, z: pos.z };
     walk.checkAt = simTime + 0.7;
   }
-  const s = SETTINGS.WALK_SPEED * Math.min(1, d / 0.6);
+  const s = SETTINGS.WALK_SPEED * (last ? Math.min(1, d / 0.6) : 1);
   return { x: (dx / d) * s, z: (dz / d) * s };
 }
 
@@ -1087,7 +1155,7 @@ function updatePlayer(dt) {
   const before = pos.clone();
   pos.x += vel.x * dt;
   pos.z += vel.y * dt;
-  collide(pos, W.colliders, PLAYER_RADIUS);
+  const bumped = collide(pos, W.colliders, PLAYER_RADIUS);
   forest.constrain(pos, dt);
   walked += before.distanceTo(pos);
   const speed = Math.hypot(vel.x, vel.y);
@@ -1105,6 +1173,7 @@ function updatePlayer(dt) {
   player.animate(dt, Math.min(1, speed / SETTINGS.WALK_SPEED));
   player.updateCheer(dt);
   Object.assign(me, { x: pos.x, y: pos.y, z: pos.z, facing, speed });
+  a11yMode?.update(dt, { moving: speed > 0.3, bumped, keysWalking: !!(mv.x || mv.y) });
 }
 
 function updateGifts() {
