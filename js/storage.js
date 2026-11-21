@@ -4,7 +4,7 @@
 export const IS_TEST = location.pathname.includes('-test/');
 // Each new test version starts from nothing, so testers see the new things from the beginning
 // instead of gates and doors they opened in an older version. Change TEST_ROUND with each test release.
-const TEST_ROUND = '2026-11-21b';
+const TEST_ROUND = '2026-11-22';
 const KEY = IS_TEST ? `magicHomeTour.test.save.${TEST_ROUND}` : 'magicHomeTour.save.v1';
 if (IS_TEST) {
   try { for (const k of Object.keys(localStorage)) if (k.startsWith('magicHomeTour.test.save.') && k !== KEY) localStorage.removeItem(k); } catch (e) { /* storage may be blocked */ }
@@ -32,6 +32,7 @@ function fresh() {
     days: {},         // date -> { n, right, time } questions answered that day
     forest: { stage: 0, branch: 0, done: false, trips: 0 },   // gates open, branches climbed, finished, trips finished
     terrace: { keys: [], jacketDay: null, rescueDay: null, rescueStep: 0, rescuedDay: null, atticOpen: false },
+    space: { parts: 0, trips: 0 },   // rocket parts built (0 to 4), trips to the Moon
   };
 }
 
@@ -43,7 +44,7 @@ function load() {
     if (raw) {
       const data = JSON.parse(raw);
       const base = fresh();
-      return { ...base, ...data, settings: { ...base.settings, ...(data.settings || {}) }, terrace: { ...base.terrace, ...(data.terrace || {}) } };
+      return { ...base, ...data, settings: { ...base.settings, ...(data.settings || {}) }, terrace: { ...base.terrace, ...(data.terrace || {}) }, space: { ...base.space, ...(data.space || {}) } };
     }
   } catch (e) {
     console.warn('Could not read saved progress, starting fresh.', e);

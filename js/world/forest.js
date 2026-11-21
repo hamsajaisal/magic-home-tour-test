@@ -186,8 +186,6 @@ export function createForest({ scene, W, low, onFruit, onSurprise }) {
   for (const s of [-1, 1]) cyl(0.14, 0.17, 2.6, '#6b3518', -20, 0, 12 + s * 1.6, entry);
   box(0.2, 0.2, 3.5, '#6b3518', -20, 2.5, 12, entry);
   const archSign = sign(entry, 3, 0.75, -19.85, 2.2, 12, Math.PI / 2);
-  cyl(0.05, 0.05, 1.7, '#6b3518', -2, 0, 15.4, entry);
-  const postSign = sign(entry, 2, 0.5, -2, 1.75, 15.45, 0);
 
   // ---------- ground and path ----------
   box(112, 0.1, 110, '#5aa845', -76, -0.06, 6);
@@ -554,7 +552,6 @@ export function createForest({ scene, W, low, onFruit, onSurprise }) {
         m.material.needsUpdate = true;
       };
       paint(archSign, `🌳 ${names.forest}`, '#2f7d3a');
-      paint(postSign, `⬅ 🌳 ${names.toForest}`, '#2f7d3a');
       boards.forEach((b, i) => paint(b.board, [`🪧 ${names.board} ${i + 1}/${GATES}`, i < S.stage ? '✅' : `${names.behind} ${TEASERS[i]}❓`], '#f6e3b4', '#3a2a1a'));
     },
 

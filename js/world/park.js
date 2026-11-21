@@ -94,15 +94,15 @@ export function createPark({ scene, W, low }) {
   };
   fence('x', PARK.z1, PARK.x1, PARK.x2);
   fence('x', PARK.z2, PARK.x1, PARK.x2);
-  fence('z', PARK.x2, PARK.z1, PARK.z2);
+  fence('z', PARK.x2, PARK.z1, 12);                // with a gate in the middle, to the space centre
+  fence('z', PARK.x2, 16, PARK.z2);
+  box(2.2, 0.02, 4, '#f2d49b', 42, 0.005, 14);
   // the arch over the gap, with the park's name on it
   for (const s of [-1, 1]) cyl(0.16, 0.18, 3.4, '#ff5d8f', PARK.x1, 0, 19.5 + s * 2.2);
   box(0.25, 0.35, 4.7, '#ffd23d', PARK.x1, 3.3, 19.5);
   const archSign = sign(3.6, 0.8, PARK.x1 - 0.15, 2.85, 19.5, -Math.PI / 2);
   const archBack = sign(3.6, 0.8, PARK.x1 + 0.15, 2.85, 19.5, Math.PI / 2);
   // signs the child sees from the front yard: a post by the front path and a big board near the gap
-  cyl(0.05, 0.05, 1.7, '#6b3518', 2.4, 0, 15.4);
-  const postSign = sign(2.4, 0.55, 2.4, 1.75, 15.45, 0);
   const boardAngle = Math.atan2(-16, -7);                // facing the front steps
   const bx = 17.6, bz = 23.4;
   for (const s of [-1, 1]) cyl(0.12, 0.14, 3.2, '#ff5d8f', bx + Math.cos(boardAngle) * 1.9 * s, 0, bz - Math.sin(boardAngle) * 1.9 * s);
@@ -343,7 +343,6 @@ export function createPark({ scene, W, low }) {
 
     refreshSigns(names) {
       const paint = (m, lines, bg) => { m.material.map?.dispose(); m.material.map = labelTexture(lines, bg, '#ffffff'); m.material.needsUpdate = true; };
-      paint(postSign, `🎡 ${names.toPark} ➡`, '#ff5d8f');
       paint(billboard, [`🎡 ${names.park}`, names.parkRides], '#3d7bff');
       for (const [m, flip] of [[archSign, false], [archBack, true]]) {
         m.material.map?.dispose();

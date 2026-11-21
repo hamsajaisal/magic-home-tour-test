@@ -14,6 +14,8 @@ import { createTerrace, isUp, STARS_PER_ANSWER, RESCUE_STEPS, SPOTS } from './wo
 import { createForest, GATES, BRANCHES } from './world/forest.js';
 import { createPark, RIDES, RIDE_EMOJI } from './world/park.js';
 import { createRace } from './world/race.js';
+import { createPlaces, PLACE_ORDER } from './world/places.js';
+import { createSpace, FLIGHT_LEGS } from './world/space.js';
 import { initControls, getMove, takeYaw, setControlsEnabled, controlsEnabled, takeClick, setTurnMode } from './controls.js';
 import { openQuiz, isQuizOpen, retranslateQuiz } from './ui/quiz.js';
 import { initPanels, openShop, openAlbum, openDaily, openProgress } from './ui/panels.js';
@@ -32,9 +34,9 @@ import { confetti } from './fx.js';
 
 const $ = (id) => document.getElementById(id);
 let rooms = [];
-let W, player, renderer, scene, camera, sun, hemi, surprises, decor, extras, terrace, forest, park, race;
+let W, player, renderer, scene, camera, sun, hemi, surprises, decor, extras, terrace, forest, park, race, places, space;
 // true while a ride moves the child (forest tree, swing, boat, or a ride in the Maths Park)
-const held = () => forest.holds() || park.holds() || race.holds();
+const held = () => forest.holds() || park.holds() || race.holds() || space.holds();
 const pos = new THREE.Vector3(START.x, 0, START.z);
 const vel = new THREE.Vector2();
 let facing = Math.PI;      // facing the house
@@ -149,11 +151,14 @@ function setup3D() {
   terrace = createTerrace({ scene, W, low, lights: { hemi, sun }, setBanner });
   terrace.setAtticOpen(save.terrace.atticOpen, true);
   terrace.setRescue(rescueStepToday(), true);
-  terrace.setTrail(!save.stats.terraceVisited);
   forest = createForest({ scene, W, low, onFruit: eatFruit, onSurprise: forestSurprise });
   forest.setProgress(save.forest.stage, save.forest.done, true);
   park = createPark({ scene, W, low });
   race = createRace({ scene, W, low });
+  space = createSpace({ scene, W, low, onRock: moonRock });
+  space.setParts(save.space.parts);
+  places = createPlaces({ scene, W });
+  refreshPlaces(false);
 
   for (const d of W.doors) {
     if (roomState(d.room.id).unlocked) openDoor(d, true);
@@ -249,6 +254,7 @@ function runQuiz(opts) {
         const d = pendingUnlock;
         pendingUnlock = null;
         openDoor(d);
+        refreshPlaces(true);   // a new place may open with this room
         a11yMode?.roomOpened(d.room);
         confetti(160);
         player.cheer();
@@ -342,7 +348,7 @@ function rescueStepToday() {
 let terraceCallTimer = null;
 const terraceCallDone = () => {
   const st = save.stats;
-  return st.terraceVisited || (st.terraceCalls || 0) >= 3 || st.terraceCallDay === today();
+  return st.terraceVisited || !places.isOpen('terrace') || (st.terraceCalls || 0) >= 3 || st.terraceCallDay === today() || st.callDay === today();
 };
 
 function callFromTerrace(delay) {
@@ -350,9 +356,10 @@ function callFromTerrace(delay) {
   clearTimeout(terraceCallTimer);
   terraceCallTimer = setTimeout(function fire() {
     if (terraceCallDone()) return;
-    if (isQuizOpen() || anyPanelOpen() || surprises.active()) { terraceCallTimer = setTimeout(fire, 8000); return; }
+    if (isQuizOpen() || anyPanelOpen() || surprises.active() || held() || pos.x > 1000) { terraceCallTimer = setTimeout(fire, 8000); return; }
     save.stats.terraceCalls = (save.stats.terraceCalls || 0) + 1;
     save.stats.terraceCallDay = today();
+    save.stats.callDay = today();
     persist();
     play('whistle');
     setBanner(t('terraceCall'));
@@ -565,7 +572,7 @@ function forestSurprise(i) {
 
 // ---------- the boat race on the backwater: the child picks a subject, then 10 questions, one per leg ----------
 const RACE_SUBJECTS = ['social', 'maths', 'science', 'malayalam', 'english', 'gk'];
-function openRacePick() {
+function openSubjectPick(titleKey, textKey, onPick) {
   hidePrompt();
   const list = $('race-pick-list');
   list.innerHTML = '';
@@ -574,9 +581,11 @@ function openRacePick() {
     const b = document.createElement('button');
     b.className = 'big-btn';
     b.textContent = `${room ? room.emoji : '🌍'} ${t('subj_' + s)}`;
-    b.addEventListener('click', () => { play('click'); $('race-pick').classList.add('hidden'); startRace(s); });
+    b.addEventListener('click', () => { play('click'); $('race-pick').classList.add('hidden'); onPick(s); });
     list.appendChild(b);
   }
+  $('race-pick').querySelector('h2').textContent = t(titleKey);
+  $('race-pick').querySelector('p').textContent = t(textKey);
   setControlsEnabled(false);
   $('race-pick').classList.remove('hidden');
 }
@@ -629,6 +638,106 @@ function startRace(subject) {
   showBannerFor(t('raceCount'), 3200);
 }
 
+// ---------- the space centre and the trip to the Moon ----------
+const spaceRoom = (subject) => ({ id: 'space', subject, emoji: '🚀', name: nameOf('spaceName') });
+let tripSubject = 'science';
+const SKY_DAY = new THREE.Color('#8fd3ff'), FOG_DAY = new THREE.Color('#bfe9ff'), SKY_SPACE = new THREE.Color('#03040c');
+let skyWas = 0;
+function applySky() {
+  const k = space.darkness();
+  if (k < 0.002 && skyWas < 0.002) return;          // leave the sky alone on ordinary days
+  skyWas = k;
+  scene.background.lerpColors(SKY_DAY, SKY_SPACE, k);
+  scene.fog.color.lerpColors(FOG_DAY, SKY_SPACE, k);
+  scene.fog.near = 40 + k * 400;
+  scene.fog.far = 90 + k * 400;
+  hemi.intensity = 1.1 - 0.5 * k;
+}
+
+function startRocketPart(subject) {
+  const i = save.space.parts;
+  runQuiz({
+    room: spaceRoom(subject), count: SETTINGS.SPACE_PART_QUESTIONS, needed: SETTINGS.SPACE_PART_CORRECT,
+    passTitle: 'spacePartPass', passButton: 'spacePartGo',
+    afterClose(passed) {
+      if (!passed) { dismissed = null; return; }
+      save.space.parts = i + 1;
+      persist();
+      space.addPart(i, () => {
+        player.cheer();
+        confetti(70, ['🔧', '🚀', '⭐']);
+        showBannerFor(t('rocketPartDone' + i), 9000);
+        dismissed = null;
+      });
+    },
+  });
+}
+
+function startMoonTrip(subject) {
+  tripSubject = subject;
+  hidePrompt();
+  setControlsEnabled(false);
+  space.onCount = (n) => { if (n) setBanner(`🚀 ${n}`); else showBannerFor(t('liftoff'), 6000); };
+  space.launch({
+    onFlight: () => {
+      showBannerFor(t('spaceFlight'), 7000);
+      runQuiz({
+        room: spaceRoom(subject), count: FLIGHT_LEGS, needed: 0, docked: true,
+        passTitle: 'spaceFlightDone', passButton: 'spaceLand',
+        onEach(firstTry) { space.leg(firstTry); toast(firstTry ? t('meteorZap') : t('meteorBump')); },
+        afterClose() {
+          if (space.phase === 'flight' && space.legs < FLIGHT_LEGS) {   // closed during the flight: back to the pad
+            space.abort();
+            toast(t('spaceAborted'));
+            setControlsEnabled(true);
+            return;
+          }
+          const wait = () => { if (space.holds()) { setTimeout(wait, 300); return; } setControlsEnabled(true); };
+          wait();
+        },
+      });
+    },
+    onLanded: () => {
+      player.cheer();
+      confetti(120, ['🌙', '⭐', '🚀']);
+      showBannerFor(t('moonLanded', { n: 8 }), 14000);
+    },
+  });
+}
+
+function moonRock(n, all) {
+  addCoins(SETTINGS.ROCK_COINS);
+  toast(t('moonRock', { n, all }));
+}
+
+function startFlag() {
+  runQuiz({
+    room: spaceRoom(tripSubject), count: SETTINGS.SPACE_FLAG_QUESTIONS, needed: SETTINGS.SPACE_FLAG_CORRECT,
+    passTitle: 'flagPass', passButton: 'flagUp',
+    afterClose(passed) {
+      if (!passed) { dismissed = null; return; }
+      space.plantFlag();
+      addCoins(20);
+      player.cheer();
+      confetti(150, ['🇮🇳', '🚩', '✨', '🌙']);
+      showBannerFor(t('flagPlanted', { c: 20 }), 10000);
+    },
+  });
+}
+
+function goHomeFromMoon() {
+  hidePrompt();
+  space.goHome(() => {
+    save.space.trips++;
+    persist();
+    bumpStat('moonTrips');
+    addCoins(SETTINGS.SPACE_COINS);
+    player.cheer();
+    confetti(160, ['🪂', '💧', '🌙', '🏆']);
+    showBannerFor(t('homeSplash', { c: SETTINGS.SPACE_COINS }), 12000);
+  });
+}
+
 // ---------- the Maths Park: a short maths quiz, then the ride ----------
 const parkRoom = () => ({ id: 'park', subject: 'maths', emoji: '🎡', name: nameOf('parkName') });
 function startParkRide(target) {
@@ -647,6 +756,37 @@ function startParkRide(target) {
       });
     },
   });
+}
+
+// ---------- places outside the rooms: they open one by one as rooms open ----------
+const roomsOpenCount = () => rooms.filter((r) => roomState(r.id).unlocked).length;
+const CALL_SOUNDS = { forest: 'tweet', park: 'tune', race: 'row', space: 'go' };
+function refreshPlaces(announce) {
+  const opened = places.update(roomsOpenCount(), save.stats);
+  terrace?.setTrail(!save.stats.terraceVisited && places.isOpen('terrace'));
+  if (announce) refreshSigns();      // at start-up the signs are painted later with everything else
+  if (!announce || !opened.length) return;
+  // a new place: say so (this is the day's call)
+  const id = opened[opened.length - 1];
+  save.stats.callDay = today();
+  persist();
+  setTimeout(() => {
+    play('unlock');
+    showBannerFor(`${t('placeOpened', { place: t('place_' + id) })} ${id === 'terrace' ? t('terraceCall') : t('call_' + id)}`, 12000);
+  }, 2600);
+}
+
+// Once a day, one call to the first open place the child has not found yet (the terrace has its own call).
+function dailyCall() {
+  if (simTime < 45 || save.stats.callDay === today() || save.stats.terraceCallDay === today()) return;
+  if (Math.abs(pos.x) > 20 || pos.z < -14 || isQuizOpen() || anyPanelOpen() || held()) return;
+  if (places.isOpen('terrace') && !save.stats.terraceVisited) return;
+  const next = PLACE_ORDER.find((p) => p.id !== 'terrace' && places.isOpen(p.id) && !save.stats[p.visited]);
+  if (!next) return;
+  save.stats.callDay = today();
+  persist();
+  play(CALL_SOUNDS[next.id]);
+  showBannerFor(t('call_' + next.id), 10000);
 }
 
 function startBoat() {
@@ -732,6 +872,26 @@ function showPrompt(target) {
     $('prompt-text').textContent = t('swingPrompt');
     $('prompt-go').textContent = t('swingGo');
     $('prompt-go').classList.remove('hidden');
+  } else if (target.kind === 'sbuild') {
+    $('prompt-emoji').textContent = '🚀🏗️';
+    $('prompt-text').textContent = t('spaceBuild', { part: t('rocketPart' + save.space.parts), i: save.space.parts + 1, n: SETTINGS.SPACE_PART_QUESTIONS, k: SETTINGS.SPACE_PART_CORRECT });
+    $('prompt-go').textContent = t('spaceBuildGo');
+    $('prompt-go').classList.remove('hidden');
+  } else if (target.kind === 'slaunch') {
+    $('prompt-emoji').textContent = '🚀🌙';
+    $('prompt-text').textContent = t('spaceLaunch', { n: FLIGHT_LEGS });
+    $('prompt-go').textContent = t('spaceLaunchGo');
+    $('prompt-go').classList.remove('hidden');
+  } else if (target.kind === 'sflag') {
+    $('prompt-emoji').textContent = '🚩';
+    $('prompt-text').textContent = t('flagPrompt', { n: SETTINGS.SPACE_FLAG_QUESTIONS, k: SETTINGS.SPACE_FLAG_CORRECT });
+    $('prompt-go').textContent = t('flagGo');
+    $('prompt-go').classList.remove('hidden');
+  } else if (target.kind === 'shome') {
+    $('prompt-emoji').textContent = '🚀🏠';
+    $('prompt-text').textContent = t('homePrompt');
+    $('prompt-go').textContent = t('homeGo');
+    $('prompt-go').classList.remove('hidden');
   } else if (target.kind === 'race') {
     $('prompt-emoji').textContent = '🚣🏆';
     $('prompt-text').textContent = t('racePrompt', { n: SETTINGS.RACE_QUESTIONS });
@@ -792,7 +952,11 @@ function act() {
   else if (prompt.kind === 'fswing') startSwing();
   else if (prompt.kind === 'fboat') startBoat();
   else if (prompt.kind === 'pride') startParkRide(prompt);
-  else if (prompt.kind === 'race') openRacePick();
+  else if (prompt.kind === 'race') openSubjectPick('racePickTitle', 'racePickText', startRace);
+  else if (prompt.kind === 'sbuild') openSubjectPick('spacePickTitle', 'spacePickText', startRocketPart);
+  else if (prompt.kind === 'slaunch') openSubjectPick('spacePickTitle', 'spacePickText', startMoonTrip);
+  else if (prompt.kind === 'sflag') startFlag();
+  else if (prompt.kind === 'shome') goHomeFromMoon();
   else if (prompt.kind === 'fnew') startNewTrip();
   else openGift(prompt.gift);
 }
@@ -812,7 +976,7 @@ function checkPrompts() {
     }
   } else for (const d of W.doors) if (d.collider.on) targets.push({ kind: 'door', key: `door:${d.room.id}`, door: d, pos: d.front, r: 1.5 });
   if (!surprises.active() && !held()) {
-    if (!isUp(pos.y)) targets.push(...park.targets(), ...race.targets());
+    if (!isUp(pos.y)) targets.push(...park.targets(), ...race.targets(), ...space.targets(save.space.parts));
     for (const g of surprises.gifts) if (g.group.visible) targets.push({ kind: 'gift', key: `gift:${g.room.id}`, gift: g, pos: g.pos, r: 1.3 });
     targets.push({ kind: 'well', key: 'well', pos: extras.well.pos, r: 2.0 });
     targets.push({ kind: 'cupboard', key: 'cupboard', pos: extras.cupboard.pos, r: 1.3 });
@@ -871,6 +1035,8 @@ function refreshSigns() {
   }
   extras.refreshSigns({ cupboard: t('cupboardName'), well: t('wellName') }, wrongQuestions(save, lang()).length);
   terrace.refreshSigns({ terrace: t('terraceName'), attic: t('atticName') }, save.terrace.keys.length, save.terrace.atticOpen);
+  places.refreshSigns({ place: Object.fromEntries(PLACE_ORDER.map((p) => [p.id, t('place_' + p.id)])), rooms: (n) => t('placeNeedRooms', { n }) });
+  space.refreshSigns({ space: t('spaceName') });
   race.refreshSigns({ start: t('raceStart'), finish: t('raceFinish'), lake: t('raceSign') }, pick);
   park.refreshSigns({ park: t('parkName'), toPark: t('parkSign'), parkRides: t('parkBoard') });
   forest.refreshSigns({ forest: t('forestName'), toForest: t('forestSign'), board: t('forestBoard'), behind: t('forestBehind') });
@@ -982,7 +1148,8 @@ function startPlaying() {
 
 function setupA11y() {
   a11yMode = createA11yMode({
-    save, persist, lang, pick, announce, pos, rooms, doors: W.doors, roomState, surprises, extras, forest, park, race, terraceSpots: SPOTS,
+    save, persist, lang, pick, announce, pos, rooms, doors: W.doors, roomState, surprises, extras, forest, park, race, space, terraceSpots: SPOTS,
+    placeOpen: (id) => places.isOpen(id),
     colliders: () => W.colliders,
     getYaw: () => yaw,
     turn: (d) => { yaw += d; lastTurn = simTime; },
@@ -1288,6 +1455,7 @@ function updatePlayer(dt) {
   forest.constrain(pos, dt);
   park.constrain(pos);
   race.constrain(pos);
+  space.constrain(pos);
   walked += before.distanceTo(pos);
   const speed = Math.hypot(vel.x, vel.y);
   if (speed > 0.3) {
@@ -1297,8 +1465,9 @@ function updatePlayer(dt) {
     facing += diff * Math.min(1, dt * 12);
   }
   facing = forest.facing() ?? park.facing() ?? race.facing() ?? facing;
+  player.root.visible = !space.hidesPlayer();   // inside the rocket or the capsule
   if (walk.marker?.visible) walk.marker.scale.setScalar(1 + Math.sin(simTime * 6) * 0.12);
-  pos.y += ((forest.height() ?? park.height() ?? race.height() ?? floorHeight(pos.x, pos.z)) - pos.y) * Math.min(1, dt * 14);
+  pos.y += ((forest.height() ?? park.height() ?? race.height() ?? space.height() ?? floorHeight(pos.x, pos.z)) - pos.y) * Math.min(1, dt * 14);
   player.root.position.copy(pos);
   player.root.rotation.y = facing;
   player.animate(dt, Math.min(1, speed / SETTINGS.WALK_SPEED));
@@ -1360,6 +1529,8 @@ function updateCamera(dt) {
     camGoal.y += Math.max(0, 1.4 - Math.hypot(camGoal.x - pos.x, camGoal.z - pos.z)) * 0.7;
   }
   if (race.active) race.cameraGoals(camGoal, lookAt, narrow);
+  else space.cameraGoals(camGoal, lookAt, narrow);
+  applySky();
   if (snapCamera) { camera.position.copy(camGoal); snapCamera = false; }
   else camera.position.lerp(camGoal, Math.min(1, dt * 6));
   camera.lookAt(lookAt);
@@ -1427,25 +1598,18 @@ function frame(dt, time, draw = true) {
   forest.update(dt, time, me, isQuizOpen() || anyPanelOpen());
   park.update(dt, time, me, isQuizOpen() || anyPanelOpen());
   race.update(dt, time, me);
+  space.update(dt, time, me);
+  if (space.inside(pos.x, pos.z) && !save.stats.spaceVisited) {
+    save.stats.spaceVisited = 1;
+    persist();
+    showBannerFor(t('spaceWelcome'), 10000);
+  }
   if (race.inside(pos.x, pos.z) && !save.stats.raceVisited) {
     save.stats.raceVisited = 1;
     persist();
     showBannerFor(t('raceWelcome', { n: SETTINGS.RACE_QUESTIONS }), 10000);
   }
-  // once the park is known: once a day, a call to the boat race until it has been found
-  if (!save.stats.raceVisited && save.stats.parkVisited && simTime > 60 && save.stats.raceCallDay !== today() && save.stats.parkCallDay !== today() && Math.abs(pos.x) < 20 && pos.z > -14 && !isQuizOpen() && !anyPanelOpen() && !held()) {
-    save.stats.raceCallDay = today();
-    persist();
-    play('row');
-    showBannerFor(t('raceCall'), 10000);
-  }
-  // until the child has found the park: once a day, a little tune and a banner pointing the way
-  if (!save.stats.parkVisited && simTime > 45 && save.stats.parkCallDay !== today() && Math.abs(pos.x) < 20 && !isQuizOpen() && !anyPanelOpen() && !held()) {
-    save.stats.parkCallDay = today();
-    persist();
-    play('tune');
-    showBannerFor(t('parkCall'), 10000);
-  }
+  dailyCall();
   if (park.inside(pos.x, pos.z) && !save.stats.parkVisited) {
     save.stats.parkVisited = 1;
     persist();
@@ -1468,6 +1632,7 @@ window.__game = {
   get forest() { return forest; },
   get park() { return park; },
   get race() { return race; },
+  get space() { return space; },
   get yaw() { return yaw; },
   set yaw(v) { yaw = v; snapCamera = true; },      // for tests: which way the camera looks
   get closeness() { return closeness; },

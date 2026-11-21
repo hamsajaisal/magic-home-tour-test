@@ -102,8 +102,6 @@ export function createRace({ scene, W, low }) {
     box(0.15, 0.15, LANES[0] - LANES[LANES.length - 1] + 4.4, x === FINISH_X ? '#ff3b30' : '#ffffff', x, 5.8, (LANES[0] + LANES[LANES.length - 1]) / 2);
   }
   // a signpost where the side path starts, seen from the front yard
-  cyl(0.05, 0.05, 1.7, '#6b3518', JETTY.x + 1.6, 0, 10.4);
-  const postSign = sign(2.4, 0.55, JETTY.x + 1.6, 1.75, 10.45, 0);
   const finishSign = sign(9, 1.4, FINISH_X, 4.6, (LANES[0] + LANES[LANES.length - 1]) / 2, Math.PI / 2);
   const startSign = sign(9, 1.4, START_X, 4.6, (LANES[0] + LANES[LANES.length - 1]) / 2, Math.PI / 2);
   for (let x = START_X + 6; x < FINISH_X; x += low ? 12 : 6) {
@@ -227,7 +225,6 @@ export function createRace({ scene, W, low }) {
 
     refreshSigns(names, pick) {
       const paint = (m, lines, bg) => { m.material.map?.dispose(); m.material.map = labelTexture(lines, bg, '#ffffff'); m.material.needsUpdate = true; };
-      paint(postSign, `🚣 ${names.lake} ⬆`, '#2f8fc8');
       paint(startSign, `🚩 ${names.start}`, '#3d7bff');
       paint(finishSign, `🏁 ${names.finish}`, '#ff3b30');
       boats.forEach((b) => paint(b.label, pick(b.name), b.color === '#ffd23d' ? '#c98a00' : b.color));

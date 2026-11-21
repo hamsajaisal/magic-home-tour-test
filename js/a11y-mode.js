@@ -16,9 +16,9 @@ const FOREST_START = { x: PATH[0][0], z: PATH[0][1] };
 
 const WORDS = {
   ml: {
-    zone: { yard: 'മുറ്റം', steps: 'മുൻവശത്തെ പടികൾ', veranda: 'പൂമുഖം', hall: 'അകത്തളം', courtyard: 'നടുമുറ്റം', backhall: 'പിൻവശത്തെ ഹാൾ', garden: 'തോട്ടം', stairs: 'ടെറസിലേക്കുള്ള പടികൾ', terrace: 'ടെറസ്', forest: 'കാട്ടിലെ വഴി', park: 'കണക്കുപാർക്ക്', lake: 'കായൽക്കര' },
+    zone: { yard: 'മുറ്റം', steps: 'മുൻവശത്തെ പടികൾ', veranda: 'പൂമുഖം', hall: 'അകത്തളം', courtyard: 'നടുമുറ്റം', backhall: 'പിൻവശത്തെ ഹാൾ', garden: 'തോട്ടം', stairs: 'ടെറസിലേക്കുള്ള പടികൾ', terrace: 'ടെറസ്', forest: 'കാട്ടിലെ വഴി', park: 'കണക്കുപാർക്ക്', lake: 'കായൽക്കര', space: 'ബഹിരാകാശ കേന്ദ്രം', moon: 'ചന്ദ്രൻ' },
     ride: { seesaw: 'സീസോ', slide: 'സ്ലൈഡ്', merry: 'കറങ്ങും കുതിരകൾ', rain: 'മഴയുള്ള വാട്ടർ സ്ലൈഡ്', wheel: 'ആകാശത്തോണി' },
-    place: { frontdoor: 'വീടിന്റെ മുൻവാതിൽ', steps: 'മുൻവശത്തെ പടികൾ', tulsi: 'നടുമുറ്റത്തെ തുളസിത്തറ', lamp: 'നിലവിളക്ക്', cupboard: 'പുനരവലോകന അലമാര', well: 'തോട്ടത്തിലെ ആഗ്രഹക്കിണർ', stairs: 'ടെറസിലേക്കുള്ള പടികൾ', forest: 'കാട്ടിലേക്കുള്ള വഴി', yard: 'മുൻവശത്തെ മുറ്റം', kite: 'പട്ടം', telescope: 'ദൂരദർശിനി', pool: 'നീന്തൽക്കുളം', attic: 'രഹസ്യ മുറി', chest: 'നിധിപ്പെട്ടി', fboard: 'അടുത്ത ചോദ്യപ്പലക', ftree: 'വലിയ മരം', fswing: 'ഊഞ്ഞാൽ', fboat: 'അരുവിയിലെ തോണി', fnew: 'പുതിയ യാത്ര', park: 'കണക്കുപാർക്കിന്റെ കവാടം', race: 'വള്ളംകളി ജെട്ടി' },
+    place: { frontdoor: 'വീടിന്റെ മുൻവാതിൽ', steps: 'മുൻവശത്തെ പടികൾ', tulsi: 'നടുമുറ്റത്തെ തുളസിത്തറ', lamp: 'നിലവിളക്ക്', cupboard: 'പുനരവലോകന അലമാര', well: 'തോട്ടത്തിലെ ആഗ്രഹക്കിണർ', stairs: 'ടെറസിലേക്കുള്ള പടികൾ', forest: 'കാട്ടിലേക്കുള്ള വഴി', yard: 'മുൻവശത്തെ മുറ്റം', kite: 'പട്ടം', telescope: 'ദൂരദർശിനി', pool: 'നീന്തൽക്കുളം', attic: 'രഹസ്യ മുറി', chest: 'നിധിപ്പെട്ടി', fboard: 'അടുത്ത ചോദ്യപ്പലക', ftree: 'വലിയ മരം', fswing: 'ഊഞ്ഞാൽ', fboat: 'അരുവിയിലെ തോണി', fnew: 'പുതിയ യാത്ര', park: 'കണക്കുപാർക്കിന്റെ കവാടം', race: 'വള്ളംകളി ജെട്ടി', space: 'ബഹിരാകാശ കേന്ദ്രത്തിന്റെ കവാടം', sbuild: 'റോക്കറ്റ് നിർമ്മാണ മേശ', slaunch: 'റോക്കറ്റ് വിക്ഷേപണ മേശ', sflag: 'കൊടി നാട്ടാനുള്ള സ്ഥലം', shome: 'റോക്കറ്റിന്റെ വാതിൽ', rock: 'ചന്ദ്രക്കല്ല്' },
     door: (r) => `${r} – വാതിൽ`, locked: (r) => `${r} – വാതിൽ (പൂട്ടിയത്)`, gift: (r) => `സമ്മാനപ്പെട്ടി (${r})`,
     ahead: 'നേരെ മുന്നിൽ', left: 'ഇടതുവശത്ത്', right: 'വലതുവശത്ത്', behind: 'പിന്നിൽ', frontLeft: 'മുന്നിൽ ഇടത്തായി', frontRight: 'മുന്നിൽ വലത്തായി', backLeft: 'പിന്നിൽ ഇടത്തായി', backRight: 'പിന്നിൽ വലത്തായി',
     turnLeft: 'ഇടത്തോട്ട്', turnRight: 'വലത്തോട്ട്',
@@ -30,9 +30,9 @@ const WORDS = {
     noWay: 'അങ്ങോട്ടുള്ള വഴി കണ്ടുപിടിക്കാൻ പറ്റിയില്ല.', open: 'തുറന്നത്', lockedWord: 'പൂട്ടിയത്',
   },
   en: {
-    zone: { yard: 'the front yard', steps: 'the front steps', veranda: 'the veranda', hall: 'the hall', courtyard: 'the courtyard', backhall: 'the back hall', garden: 'the garden', stairs: 'the terrace stairs', terrace: 'the terrace', forest: 'the forest path', park: 'the Maths Park', lake: 'the backwater shore' },
+    zone: { yard: 'the front yard', steps: 'the front steps', veranda: 'the veranda', hall: 'the hall', courtyard: 'the courtyard', backhall: 'the back hall', garden: 'the garden', stairs: 'the terrace stairs', terrace: 'the terrace', forest: 'the forest path', park: 'the Maths Park', lake: 'the backwater shore', space: 'the space centre', moon: 'the Moon' },
     ride: { seesaw: 'the seesaw', slide: 'the slide', merry: 'the merry-go-round', rain: 'the rain water slide', wheel: 'the giant wheel' },
-    place: { frontdoor: 'the front door', steps: 'the front steps', tulsi: 'the tulsi stand in the courtyard', lamp: 'the brass lamp', cupboard: 'the revision cupboard', well: 'the wishing well', stairs: 'the terrace stairs', forest: 'the way to the forest', yard: 'the front yard', kite: 'the kite', telescope: 'the telescope', pool: 'the pool', attic: 'the secret room', chest: 'the treasure chest', fboard: 'the next question board', ftree: 'the big tree', fswing: 'the swing', fboat: 'the boat on the stream', fnew: 'a new trip', park: 'the gate of the Maths Park', race: 'the boat race jetty' },
+    place: { frontdoor: 'the front door', steps: 'the front steps', tulsi: 'the tulsi stand in the courtyard', lamp: 'the brass lamp', cupboard: 'the revision cupboard', well: 'the wishing well', stairs: 'the terrace stairs', forest: 'the way to the forest', yard: 'the front yard', kite: 'the kite', telescope: 'the telescope', pool: 'the pool', attic: 'the secret room', chest: 'the treasure chest', fboard: 'the next question board', ftree: 'the big tree', fswing: 'the swing', fboat: 'the boat on the stream', fnew: 'a new trip', park: 'the gate of the Maths Park', race: 'the boat race jetty', space: 'the gate of the space centre', sbuild: 'the rocket building desk', slaunch: 'the launch desk', sflag: 'the place for the flag', shome: 'the rocket door', rock: 'a Moon rock' },
     door: (r) => `the ${r} door`, locked: (r) => `the ${r} door (locked)`, gift: (r) => `the gift box in the ${r}`,
     ahead: 'straight ahead', left: 'on your left', right: 'on your right', behind: 'behind you', frontLeft: 'ahead on the left', frontRight: 'ahead on the right', backLeft: 'behind on the left', backRight: 'behind on the right',
     turnLeft: 'left', turnRight: 'right',
@@ -63,6 +63,8 @@ export function createA11yMode(api) {
   const inBox = (b, x, z) => x > b.x1 && x < b.x2 && z > b.z1 && z < b.z2;
   function zoneAt(x, z, y) {
     if (x < -20.1) return { id: 'forest' };
+    if (x > 1000) return { id: 'moon' };
+    if (x > 44.2) return { id: 'space' };
     if (x > 20.2) return { id: 'park' };
     if (z < -14.2) return { id: 'lake' };
     if (y > 2.2 && inBox(TERRACE, x, z)) return { id: 'terrace' };
@@ -83,6 +85,11 @@ export function createA11yMode(api) {
   // what is around: on the terrace only the terrace, otherwise the house, garden and forest
   function features(ground = false) {
     const w = W(), list = [];
+    if (api.pos.x > 1000) {
+      for (const tg of api.space.targets()) list.push({ id: tg.kind, name: w.place[tg.kind], x: tg.pos[0], z: tg.pos[1], moon: true });
+      for (const [x, z] of api.space.rocksLeft()) list.push({ id: 'rock', name: w.place.rock, x, z, moon: true });
+      return list;
+    }
     const up = api.pos.y > 2.2 && !ground;
     if (up) {
       for (const [k, s] of Object.entries(api.terraceSpots)) {
@@ -101,10 +108,16 @@ export function createA11yMode(api) {
     const add = (id, x, z) => list.push({ id, name: w.place[id], x, z });
     add('frontdoor', 0, 8.6); add('steps', 0, 11.7); add('tulsi', 0, -2.2); add('lamp', -2.8, -6.3);
     add('cupboard', ...api.extras.cupboard.pos); add('well', ...api.extras.well.pos);
-    add('stairs', STAIRS_BOTTOM.x, STAIRS_BOTTOM.z); add('forest', FOREST_START.x, FOREST_START.z); add('yard', 0, 16); add('park', 21.6, 19.5);
-    for (const tg of api.race.targets()) list.push({ id: 'race', name: w.place.race, x: tg.pos[0], z: tg.pos[1] });
-    for (const tg of api.park.targets()) list.push({ id: tg.key, name: w.ride[tg.ride], x: tg.pos[0], z: tg.pos[1], ride: true });
-    for (const tg of api.forest.targets()) list.push({ id: tg.kind, name: w.place[tg.kind], x: tg.pos[0], z: tg.pos[1], forest: true });
+    const open = (id) => !api.placeOpen || api.placeOpen(id);   // closed places are not offered
+    if (open('terrace')) add('stairs', STAIRS_BOTTOM.x, STAIRS_BOTTOM.z);
+    if (open('forest')) add('forest', FOREST_START.x, FOREST_START.z);
+    add('yard', 0, 16);
+    if (open('park')) add('park', 21.6, 19.5);
+    if (open('space')) add('space', 45.6, 14);
+    if (open('space')) for (const tg of api.space.targets(api.save.space.parts)) list.push({ id: tg.kind, name: w.place[tg.kind], x: tg.pos[0], z: tg.pos[1] });
+    if (open('race')) for (const tg of api.race.targets()) list.push({ id: 'race', name: w.place.race, x: tg.pos[0], z: tg.pos[1] });
+    if (open('park')) for (const tg of api.park.targets()) list.push({ id: tg.key, name: w.ride[tg.ride], x: tg.pos[0], z: tg.pos[1], ride: true });
+    if (open('forest')) for (const tg of api.forest.targets()) list.push({ id: tg.kind, name: w.place[tg.kind], x: tg.pos[0], z: tg.pos[1], forest: true });
     return list;
   }
 
@@ -143,9 +156,10 @@ export function createA11yMode(api) {
   }
 
   // ---------- going to a place ----------
-  const PLACES = ['frontdoor', 'yard', 'tulsi', 'lamp', 'cupboard', 'well', 'stairs', 'forest', 'park', 'race'];
+  const PLACES = ['frontdoor', 'yard', 'tulsi', 'lamp', 'cupboard', 'well', 'stairs', 'forest', 'park', 'race', 'space'];
   function destinations() {
     const all = features(true), w = W(), out = [];
+    if (api.pos.x > 1000) return all.map((f) => ({ ...f, label: f.name }));
     // rooms first: the door, or the gift box once the room is open
     for (const d of api.doors) {
       const open = api.roomState(d.room.id).unlocked;
@@ -155,7 +169,7 @@ export function createA11yMode(api) {
     for (const id of PLACES) { const f = all.find((x) => x.id === id); if (f) out.push({ ...f, label: f.name }); }
     for (const f of all) if (f.ride) out.push({ ...f, label: `${f.name} (${W().zone.park})` });
     for (const f of all) if (f.forest) out.push({ ...f, label: `${f.name} (${W().zone.forest})` });
-    for (const k of ['kite', 'telescope', 'pool']) { const s = api.terraceSpots[k]; out.push({ id: k, name: w.place[k], label: `${w.place[k]} (${W().zone.terrace})`, x: s[0], z: s[1], terrace: true }); }
+    if (!api.placeOpen || api.placeOpen('terrace')) for (const k of ['kite', 'telescope', 'pool']) { const s = api.terraceSpots[k]; out.push({ id: k, name: w.place[k], label: `${w.place[k]} (${W().zone.terrace})`, x: s[0], z: s[1], terrace: true }); }
     return out;
   }
 
@@ -174,6 +188,7 @@ export function createA11yMode(api) {
 
   function plan(dest) {
     const here = { x: api.pos.x, z: api.pos.z }, to = { x: dest.x, z: dest.z };
+    if (dest.moon || here.x > 1000) return [to];
     const up = api.pos.y > 2.2, inForest = here.x < -20.1;
     let pts = [];
     // first get back to ordinary ground

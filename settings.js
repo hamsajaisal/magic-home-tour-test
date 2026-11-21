@@ -43,6 +43,12 @@ export const SETTINGS = {
 
   // ---- Daily bonus ----
   FOREST_QUESTIONS: 5,        // questions at each board on the forest path (Science)
+  SPACE_PART_QUESTIONS: 5,    // questions for each of the 4 rocket parts
+  SPACE_PART_CORRECT: 3,
+  SPACE_FLAG_QUESTIONS: 3,    // questions to plant the flag on the Moon
+  SPACE_FLAG_CORRECT: 2,
+  SPACE_COINS: 40,            // coins for coming home from the Moon
+  ROCK_COINS: 2,              // coins for each Moon rock picked up
   RACE_QUESTIONS: 10,         // questions in one boat race (one per leg of the race)
   RACE_COINS: [30, 20, 12, 6],   // coins for coming 1st, 2nd, 3rd, 4th
   PARK_QUESTIONS: 5,          // maths questions before each ride in the Maths Park
