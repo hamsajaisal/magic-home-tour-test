@@ -2,7 +2,13 @@
 // The test copy for trusted testers (…/magic-home-tour-test/) keeps its own save,
 // so testing never changes the progress on the real game.
 export const IS_TEST = location.pathname.includes('-test/');
-const KEY = IS_TEST ? 'magicHomeTour.test.save.v1' : 'magicHomeTour.save.v1';
+// Each new test version starts from nothing, so testers see the new things from the beginning
+// instead of gates and doors they opened in an older version. Change TEST_ROUND with each test release.
+const TEST_ROUND = '2026-11-21b';
+const KEY = IS_TEST ? `magicHomeTour.test.save.${TEST_ROUND}` : 'magicHomeTour.save.v1';
+if (IS_TEST) {
+  try { for (const k of Object.keys(localStorage)) if (k.startsWith('magicHomeTour.test.save.') && k !== KEY) localStorage.removeItem(k); } catch (e) { /* storage may be blocked */ }
+}
 
 function fresh() {
   return {

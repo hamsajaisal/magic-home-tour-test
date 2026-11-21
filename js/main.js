@@ -12,6 +12,7 @@ import { createDecor } from './world/decor.js';
 import { createExtras } from './world/extras.js';
 import { createTerrace, isUp, STARS_PER_ANSWER, RESCUE_STEPS, SPOTS } from './world/terrace.js';
 import { createForest, GATES, BRANCHES } from './world/forest.js';
+import { createPark, RIDES, RIDE_EMOJI } from './world/park.js';
 import { initControls, getMove, takeYaw, setControlsEnabled, controlsEnabled, takeClick, setTurnMode } from './controls.js';
 import { openQuiz, isQuizOpen, retranslateQuiz } from './ui/quiz.js';
 import { initPanels, openShop, openAlbum, openDaily, openProgress } from './ui/panels.js';
@@ -30,7 +31,9 @@ import { confetti } from './fx.js';
 
 const $ = (id) => document.getElementById(id);
 let rooms = [];
-let W, player, renderer, scene, camera, sun, hemi, surprises, decor, extras, terrace, forest;
+let W, player, renderer, scene, camera, sun, hemi, surprises, decor, extras, terrace, forest, park;
+// true while a ride moves the child (forest tree, swing, boat, or a ride in the Maths Park)
+const held = () => forest.holds() || park.holds();
 const pos = new THREE.Vector3(START.x, 0, START.z);
 const vel = new THREE.Vector2();
 let facing = Math.PI;      // facing the house
@@ -148,6 +151,7 @@ function setup3D() {
   terrace.setTrail(!save.stats.terraceVisited);
   forest = createForest({ scene, W, low, onFruit: eatFruit, onSurprise: forestSurprise });
   forest.setProgress(save.forest.stage, save.forest.done, true);
+  park = createPark({ scene, W, low });
 
   for (const d of W.doors) {
     if (roomState(d.room.id).unlocked) openDoor(d, true);
@@ -556,6 +560,26 @@ function forestSurprise(i) {
   if (save.forest.stage <= i + 1) setTimeout(() => toast(t('fsurpriseNext')), 9500);    // the next gate is still closed
 }
 
+// ---------- the Maths Park: a short maths quiz, then the ride ----------
+const parkRoom = () => ({ id: 'park', subject: 'maths', emoji: '🎡', name: nameOf('parkName') });
+function startParkRide(target) {
+  const { ride, index } = target;
+  runQuiz({
+    room: parkRoom(), count: SETTINGS.PARK_QUESTIONS, needed: SETTINGS.PARK_CORRECT,
+    leastLevel: Math.ceil(((index + 1) * SETTINGS.LEVEL_MIX.length) / RIDES.length),   // bigger rides, harder questions
+    passTitle: 'parkPass', passButton: 'parkRideGo',
+    afterClose(passed) {
+      if (!passed) { dismissed = null; return; }
+      bumpStat('parkRides');
+      showBannerFor(t('rideOn_' + ride), 7000);
+      park.startRide(ride, () => {
+        player.cheer();
+        dismissed = { key: `pride:${ride}`, pos: [pos.x, pos.z] };
+      });
+    },
+  });
+}
+
 function startBoat() {
   hidePrompt();
   play('unlock');
@@ -639,6 +663,11 @@ function showPrompt(target) {
     $('prompt-text').textContent = t('swingPrompt');
     $('prompt-go').textContent = t('swingGo');
     $('prompt-go').classList.remove('hidden');
+  } else if (target.kind === 'pride') {
+    $('prompt-emoji').textContent = RIDE_EMOJI[target.ride];
+    $('prompt-text').textContent = t('parkPrompt', { ride: t('ride_' + target.ride), n: SETTINGS.PARK_QUESTIONS, k: SETTINGS.PARK_CORRECT });
+    $('prompt-go').textContent = t('parkGo');
+    $('prompt-go').classList.remove('hidden');
   } else if (target.kind === 'fboat') {
     $('prompt-emoji').textContent = '🚣';
     $('prompt-text').textContent = t('boatPrompt');
@@ -688,6 +717,7 @@ function act() {
   else if (prompt.kind === 'ftree') startTree();
   else if (prompt.kind === 'fswing') startSwing();
   else if (prompt.kind === 'fboat') startBoat();
+  else if (prompt.kind === 'pride') startParkRide(prompt);
   else if (prompt.kind === 'fnew') startNewTrip();
   else openGift(prompt.gift);
 }
@@ -695,7 +725,7 @@ function act() {
 function checkPrompts() {
   if (!playing || isQuizOpen() || anyPanelOpen()) return;
   const targets = forest.targets();
-  if (forest.holds()) {
+  if (held()) {
     // up in the tree only the tree's own question can be asked
   } else if (isUp(pos.y)) {
     if (!terrace.busy()) {
@@ -706,7 +736,8 @@ function checkPrompts() {
       }
     }
   } else for (const d of W.doors) if (d.collider.on) targets.push({ kind: 'door', key: `door:${d.room.id}`, door: d, pos: d.front, r: 1.5 });
-  if (!surprises.active() && !forest.holds()) {
+  if (!surprises.active() && !held()) {
+    if (!isUp(pos.y)) targets.push(...park.targets());
     for (const g of surprises.gifts) if (g.group.visible) targets.push({ kind: 'gift', key: `gift:${g.room.id}`, gift: g, pos: g.pos, r: 1.3 });
     targets.push({ kind: 'well', key: 'well', pos: extras.well.pos, r: 2.0 });
     targets.push({ kind: 'cupboard', key: 'cupboard', pos: extras.cupboard.pos, r: 1.3 });
@@ -765,6 +796,7 @@ function refreshSigns() {
   }
   extras.refreshSigns({ cupboard: t('cupboardName'), well: t('wellName') }, wrongQuestions(save, lang()).length);
   terrace.refreshSigns({ terrace: t('terraceName'), attic: t('atticName') }, save.terrace.keys.length, save.terrace.atticOpen);
+  park.refreshSigns({ park: t('parkName') });
   forest.refreshSigns({ forest: t('forestName'), toForest: t('forestSign'), board: t('forestBoard'), behind: t('forestBehind') });
   W.titleSign.material.map?.dispose();
   W.titleSign.material.map = labelTexture(`🏡 ${t('title')}`, '#ff8a3d', '#ffffff');
@@ -874,7 +906,7 @@ function startPlaying() {
 
 function setupA11y() {
   a11yMode = createA11yMode({
-    save, persist, lang, pick, announce, pos, rooms, doors: W.doors, roomState, surprises, extras, forest, terraceSpots: SPOTS,
+    save, persist, lang, pick, announce, pos, rooms, doors: W.doors, roomState, surprises, extras, forest, park, terraceSpots: SPOTS,
     colliders: () => W.colliders,
     getYaw: () => yaw,
     turn: (d) => { yaw += d; lastTurn = simTime; },
@@ -891,12 +923,10 @@ function setupA11y() {
     const onNow = !!save.settings.a11y;
     document.documentElement.classList.toggle('a11y', onNow);
     setTurnMode(onNow);
-    $('a11y-btn').setAttribute('aria-pressed', String(onNow));
     $('set-a11y').checked = onNow;
   };
   show();
   const openIntro = () => { play('click'); $('settings').classList.add('hidden'); $('a11y-intro').classList.remove('hidden'); setControlsEnabled(false); };
-  $('a11y-btn').addEventListener('click', openIntro);
   $('set-a11y').addEventListener('change', (e) => { e.target.checked = !!save.settings.a11y; openIntro(); });
   const choose = (v) => {
     play('click');
@@ -1111,7 +1141,7 @@ function walkPath(points, { onArrive, onStuck } = {}) {
 
 function useClick() {
   const c = takeClick();
-  if (!c || !playing || forest.holds() || !controlsEnabled()) return;
+  if (!c || !playing || held() || !controlsEnabled()) return;
   const ndc = new THREE.Vector2((c.x / innerWidth) * 2 - 1, -(c.y / innerHeight) * 2 + 1);
   clickRay.setFromCamera(ndc, camera);
   ground.constant = -pos.y;
@@ -1164,9 +1194,9 @@ function updatePlayer(dt) {
     sideways = Math.abs(Math.sin(off));
     if (forest.climbing || forest.riding || (Math.hypot(vel.x, vel.y) > 0.5 && simTime - lastTurn > HAND_TURN_SECONDS)) yaw += off * Math.min(1, dt * 2);
   }
-  const mv = playing && !forest.holds() ? getMove() : { x: 0, y: 0 };
+  const mv = playing && !held() ? getMove() : { x: 0, y: 0 };
   useClick();
-  if (mv.x || mv.y || forest.holds() || !controlsEnabled()) stopWalk();
+  if (mv.x || mv.y || held() || !controlsEnabled()) stopWalk();
   const fx = -Math.sin(yaw), fz = -Math.cos(yaw);       // forward on the ground
   const rx = Math.cos(yaw), rz = -Math.sin(yaw);        // right on the ground
   const auto = walkStep();
@@ -1180,6 +1210,7 @@ function updatePlayer(dt) {
   pos.z += vel.y * dt;
   const bumped = collide(pos, W.colliders, PLAYER_RADIUS);
   forest.constrain(pos, dt);
+  park.constrain(pos);
   walked += before.distanceTo(pos);
   const speed = Math.hypot(vel.x, vel.y);
   if (speed > 0.3) {
@@ -1188,9 +1219,9 @@ function updatePlayer(dt) {
     diff = Math.atan2(Math.sin(diff), Math.cos(diff));
     facing += diff * Math.min(1, dt * 12);
   }
-  facing = forest.facing() ?? facing;
+  facing = forest.facing() ?? park.facing() ?? facing;
   if (walk.marker?.visible) walk.marker.scale.setScalar(1 + Math.sin(simTime * 6) * 0.12);
-  pos.y += ((forest.height() ?? floorHeight(pos.x, pos.z)) - pos.y) * Math.min(1, dt * 14);
+  pos.y += ((forest.height() ?? park.height() ?? floorHeight(pos.x, pos.z)) - pos.y) * Math.min(1, dt * 14);
   player.root.position.copy(pos);
   player.root.rotation.y = facing;
   player.animate(dt, Math.min(1, speed / SETTINGS.WALK_SPEED));
@@ -1316,6 +1347,12 @@ function frame(dt, time, draw = true) {
     terrace.setTrail(false);
   }
   forest.update(dt, time, me, isQuizOpen() || anyPanelOpen());
+  park.update(dt, time, me, isQuizOpen() || anyPanelOpen());
+  if (park.inside(pos.x, pos.z) && !save.stats.parkVisited) {
+    save.stats.parkVisited = 1;
+    persist();
+    showBannerFor(t('parkWelcome', { n: SETTINGS.PARK_QUESTIONS, k: SETTINGS.PARK_CORRECT }), 10000);
+  }
   if (pos.x < -22 && !save.stats.forestVisited) {
     save.stats.forestVisited = 1;
     persist();
@@ -1331,7 +1368,9 @@ window.__game = {
   save, pos, me, startDoorQuiz, startSurprise, addCoins,
   get terrace() { return terrace; },
   get forest() { return forest; },
+  get park() { return park; },
   get yaw() { return yaw; },
+  set yaw(v) { yaw = v; snapCamera = true; },      // for tests: which way the camera looks
   get closeness() { return closeness; },
   get camera() { return camera; },
   // jump somewhere (for tests), e.g. __game.goTo(17.2, -0.3) for the kite corner

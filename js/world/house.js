@@ -86,7 +86,8 @@ export function buildWorld(scene, rooms, { low }) {
   box(40, 0.9, 0.4, lat, 0, 0, -14, { collide: true });
   box(0.4, 0.9, 24.5, lat, -20, 0, -1.75, { collide: true });     // west wall, with a gap for the way to the forest
   box(0.4, 0.9, 14.5, lat, -20, 0, 20.75, { collide: true });
-  box(0.4, 0.9, 42, lat, 20, 0, 7, { collide: true });
+  box(0.4, 0.9, 31.5, lat, 20, 0, 1.75, { collide: true });     // east wall, with a gap for the way to the Maths Park
+  box(0.4, 0.9, 6.5, lat, 20, 0, 24.75, { collide: true });
   box(18.2, 0.9, 0.4, lat, -10.9, 0, 28, { collide: true });
   box(18.2, 0.9, 0.4, lat, 10.9, 0, 28, { collide: true });
   box(0.7, 1.5, 0.7, lat, -2.1, 0, 28, { collide: true });

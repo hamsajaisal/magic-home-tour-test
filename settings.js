@@ -43,6 +43,8 @@ export const SETTINGS = {
 
   // ---- Daily bonus ----
   FOREST_QUESTIONS: 5,        // questions at each board on the forest path (Science)
+  PARK_QUESTIONS: 5,          // maths questions before each ride in the Maths Park
+  PARK_CORRECT: 3,            // how many must be right to get on the ride
   FOREST_CORRECT: 3,          // how many must be right to open the next gate
   FOREST_GATE_COINS: 20,      // coins for each gate
   TREE_QUESTIONS: 3,          // harder questions for each branch of the big tree

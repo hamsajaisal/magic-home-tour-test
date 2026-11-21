@@ -99,6 +99,7 @@ const SOUNDS = {
   bubbles: () => { for (let i = 0; i < 5; i++) sweep(400 + Math.random() * 500, 1200 + Math.random() * 800, i * 0.11 + Math.random() * 0.05, 0.08, 0.07); },
   paddle: () => swish(700, 0.35, 0.12),
   splash: () => { swish(500, 0.9, 0.2); swish(1500, 0.6, 0.1, 0.1); },
+  tune: () => [523, 659, 784, 659, 523, 784, 1047].forEach((f, i) => tone(f, i * 0.16, 0.22, 'triangle', 0.05)),
   tweet: () => { sweep(2600, 3800, 0, 0.12, 0.05); sweep(2800, 4200, 0.18, 0.1, 0.05); },
   meow: (vol = 0.12) => meow(vol),
   pop: () => { tone(900, 0, 0.05, 'square', 0.1); tone(300, 0.03, 0.08, 'triangle', 0.1); },

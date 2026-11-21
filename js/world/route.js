@@ -4,7 +4,7 @@
 // then corners that can be skipped in a straight line are dropped.
 import { pointBlocked } from './physics.js';
 
-const AREA = { x1: -20.3, x2: 20.3, z1: -14, z2: 28.5 };
+const AREA = { x1: -20.3, x2: 44.3, z1: -14, z2: 28.5 };    // the compound and the Maths Park beside it
 const CELL = 0.4;
 const CLEAR = 0.42;         // how far from walls the route keeps
 
