@@ -13,6 +13,7 @@ import { createExtras } from './world/extras.js';
 import { createTerrace, isUp, STARS_PER_ANSWER, RESCUE_STEPS, SPOTS } from './world/terrace.js';
 import { createForest, GATES, BRANCHES } from './world/forest.js';
 import { createPark, RIDES, RIDE_EMOJI } from './world/park.js';
+import { createRace } from './world/race.js';
 import { initControls, getMove, takeYaw, setControlsEnabled, controlsEnabled, takeClick, setTurnMode } from './controls.js';
 import { openQuiz, isQuizOpen, retranslateQuiz } from './ui/quiz.js';
 import { initPanels, openShop, openAlbum, openDaily, openProgress } from './ui/panels.js';
@@ -31,9 +32,9 @@ import { confetti } from './fx.js';
 
 const $ = (id) => document.getElementById(id);
 let rooms = [];
-let W, player, renderer, scene, camera, sun, hemi, surprises, decor, extras, terrace, forest, park;
+let W, player, renderer, scene, camera, sun, hemi, surprises, decor, extras, terrace, forest, park, race;
 // true while a ride moves the child (forest tree, swing, boat, or a ride in the Maths Park)
-const held = () => forest.holds() || park.holds();
+const held = () => forest.holds() || park.holds() || race.holds();
 const pos = new THREE.Vector3(START.x, 0, START.z);
 const vel = new THREE.Vector2();
 let facing = Math.PI;      // facing the house
@@ -152,6 +153,7 @@ function setup3D() {
   forest = createForest({ scene, W, low, onFruit: eatFruit, onSurprise: forestSurprise });
   forest.setProgress(save.forest.stage, save.forest.done, true);
   park = createPark({ scene, W, low });
+  race = createRace({ scene, W, low });
 
   for (const d of W.doors) {
     if (roomState(d.room.id).unlocked) openDoor(d, true);
@@ -201,11 +203,12 @@ function runQuiz(opts) {
     title: () => `${room.emoji} ${pick(room.name)}`,
     passTitle: door ? null : opts.passTitle || 'bonusPass',
     passButton: door ? null : opts.passButton || 'bonusGo',
+    docked: opts.docked,
     items,
     onAnswer(item, firstTry, seconds) {
       recordAnswer(item, firstTry, seconds);
       if (firstTry) rights++;
-      opts.onEach?.(firstTry);
+      opts.onEach?.(firstTry, seconds);
       const levelBefore = level();
       if (firstTry) {
         save.xp += SETTINGS.XP_PER_CORRECT;
@@ -240,7 +243,7 @@ function runQuiz(opts) {
     },
     onRetry() { if (opts.retry) opts.retry(); else runQuiz(opts); },
     onClose() {
-      setControlsEnabled(true);
+      setControlsEnabled(!race.active);
       dismissed = askedAt;
       if (pendingUnlock) {
         const d = pendingUnlock;
@@ -560,6 +563,72 @@ function forestSurprise(i) {
   if (save.forest.stage <= i + 1) setTimeout(() => toast(t('fsurpriseNext')), 9500);    // the next gate is still closed
 }
 
+// ---------- the boat race on the backwater: the child picks a subject, then 10 questions, one per leg ----------
+const RACE_SUBJECTS = ['social', 'maths', 'science', 'malayalam', 'english', 'gk'];
+function openRacePick() {
+  hidePrompt();
+  const list = $('race-pick-list');
+  list.innerHTML = '';
+  for (const s of RACE_SUBJECTS) {
+    const room = rooms.find((r) => r.subject === s);
+    const b = document.createElement('button');
+    b.className = 'big-btn';
+    b.textContent = `${room ? room.emoji : '🌍'} ${t('subj_' + s)}`;
+    b.addEventListener('click', () => { play('click'); $('race-pick').classList.add('hidden'); startRace(s); });
+    list.appendChild(b);
+  }
+  setControlsEnabled(false);
+  $('race-pick').classList.remove('hidden');
+}
+
+const ORD = { ml: ['ഒന്നാം', 'രണ്ടാം', 'മൂന്നാം', 'നാലാം'], en: ['1st', '2nd', '3rd', '4th'] };
+function startRace(subject) {
+  setControlsEnabled(false);
+  race.onFinish = (p) => {
+    const coins = SETTINGS.RACE_COINS[p - 1] || 0;
+    addCoins(coins);
+    bumpStat('races');
+    if (p === 1) bumpStat('raceWins');
+    confetti(p === 1 ? 200 : 90, p === 1 ? ['🏆', '🥇', '🚣', '✨'] : ['🚣', '💧', '⭐']);
+    player.cheer();
+    showBannerFor(t('raceResult' + p, { c: coins }), 12000);
+  };
+  race.start({
+    level: save.levels?.[subject] || 1,
+    onGo: () => {
+      runQuiz({
+        room: { id: 'race', subject, emoji: '🚣', name: nameOf('raceName') },
+        count: SETTINGS.RACE_QUESTIONS, needed: 0, docked: true,
+        passTitle: 'raceDone', passButton: 'raceBack',
+        onEach(firstTry, seconds) {
+          const r = race.leg(firstTry, seconds);
+          if (!r) return;
+          const L = lang() === 'en' ? 'en' : 'ml';
+          let msg;
+          if (r.last) msg = t('raceSprint');
+          else if (r.place === 1) msg = t('raceLead');
+          else msg = t('racePlace', { p: ORD[L][r.place - 1], leader: pick(r.leader) });
+          if (r.last || r.place !== startRace.lastPlace || race.legs % 3 === 0) toast(msg);
+          startRace.lastPlace = r.place;
+        },
+        afterClose() {
+          // let the boats reach the line before leaving the water
+          const leave = () => {
+            if (race.phase === 'sprint') { setTimeout(leave, 400); return; }
+            if (race.phase !== 'over') toast(t('raceStopped'));
+            race.end();
+            setControlsEnabled(true);
+            dismissed = { key: 'race', pos: race.targets()[0]?.pos || [pos.x, pos.z] };
+          };
+          leave();
+        },
+      });
+    },
+  });
+  startRace.lastPlace = 0;
+  showBannerFor(t('raceCount'), 3200);
+}
+
 // ---------- the Maths Park: a short maths quiz, then the ride ----------
 const parkRoom = () => ({ id: 'park', subject: 'maths', emoji: '🎡', name: nameOf('parkName') });
 function startParkRide(target) {
@@ -663,6 +732,11 @@ function showPrompt(target) {
     $('prompt-text').textContent = t('swingPrompt');
     $('prompt-go').textContent = t('swingGo');
     $('prompt-go').classList.remove('hidden');
+  } else if (target.kind === 'race') {
+    $('prompt-emoji').textContent = '🚣🏆';
+    $('prompt-text').textContent = t('racePrompt', { n: SETTINGS.RACE_QUESTIONS });
+    $('prompt-go').textContent = t('raceGo');
+    $('prompt-go').classList.remove('hidden');
   } else if (target.kind === 'pride') {
     $('prompt-emoji').textContent = RIDE_EMOJI[target.ride];
     $('prompt-text').textContent = t('parkPrompt', { ride: t('ride_' + target.ride), n: SETTINGS.PARK_QUESTIONS, k: SETTINGS.PARK_CORRECT });
@@ -718,6 +792,7 @@ function act() {
   else if (prompt.kind === 'fswing') startSwing();
   else if (prompt.kind === 'fboat') startBoat();
   else if (prompt.kind === 'pride') startParkRide(prompt);
+  else if (prompt.kind === 'race') openRacePick();
   else if (prompt.kind === 'fnew') startNewTrip();
   else openGift(prompt.gift);
 }
@@ -737,7 +812,7 @@ function checkPrompts() {
     }
   } else for (const d of W.doors) if (d.collider.on) targets.push({ kind: 'door', key: `door:${d.room.id}`, door: d, pos: d.front, r: 1.5 });
   if (!surprises.active() && !held()) {
-    if (!isUp(pos.y)) targets.push(...park.targets());
+    if (!isUp(pos.y)) targets.push(...park.targets(), ...race.targets());
     for (const g of surprises.gifts) if (g.group.visible) targets.push({ kind: 'gift', key: `gift:${g.room.id}`, gift: g, pos: g.pos, r: 1.3 });
     targets.push({ kind: 'well', key: 'well', pos: extras.well.pos, r: 2.0 });
     targets.push({ kind: 'cupboard', key: 'cupboard', pos: extras.cupboard.pos, r: 1.3 });
@@ -757,7 +832,7 @@ function checkPrompts() {
   if (!prompt && walked > 3 && walked < 4 && !rooms.some((r) => roomState(r.id).unlocked)) setTip(t('goToDoor'));
 }
 
-const PANELS = ['shop', 'album', 'daily', 'settings', 'credits', 'progress', 'about', 'news', 'a11y-intro', 'a11y-help', 'a11y-goto'];
+const PANELS = ['race-pick', 'shop', 'album', 'daily', 'settings', 'credits', 'progress', 'about', 'news', 'a11y-intro', 'a11y-help', 'a11y-goto'];
 let a11yMode = null;
 const anyPanelOpen = () => PANELS.some((id) => !$(id).classList.contains('hidden'));
 
@@ -796,6 +871,7 @@ function refreshSigns() {
   }
   extras.refreshSigns({ cupboard: t('cupboardName'), well: t('wellName') }, wrongQuestions(save, lang()).length);
   terrace.refreshSigns({ terrace: t('terraceName'), attic: t('atticName') }, save.terrace.keys.length, save.terrace.atticOpen);
+  race.refreshSigns({ start: t('raceStart'), finish: t('raceFinish'), lake: t('raceSign') }, pick);
   park.refreshSigns({ park: t('parkName'), toPark: t('parkSign'), parkRides: t('parkBoard') });
   forest.refreshSigns({ forest: t('forestName'), toForest: t('forestSign'), board: t('forestBoard'), behind: t('forestBehind') });
   W.titleSign.material.map?.dispose();
@@ -906,7 +982,7 @@ function startPlaying() {
 
 function setupA11y() {
   a11yMode = createA11yMode({
-    save, persist, lang, pick, announce, pos, rooms, doors: W.doors, roomState, surprises, extras, forest, park, terraceSpots: SPOTS,
+    save, persist, lang, pick, announce, pos, rooms, doors: W.doors, roomState, surprises, extras, forest, park, race, terraceSpots: SPOTS,
     colliders: () => W.colliders,
     getYaw: () => yaw,
     turn: (d) => { yaw += d; lastTurn = simTime; },
@@ -1211,6 +1287,7 @@ function updatePlayer(dt) {
   const bumped = collide(pos, W.colliders, PLAYER_RADIUS);
   forest.constrain(pos, dt);
   park.constrain(pos);
+  race.constrain(pos);
   walked += before.distanceTo(pos);
   const speed = Math.hypot(vel.x, vel.y);
   if (speed > 0.3) {
@@ -1219,9 +1296,9 @@ function updatePlayer(dt) {
     diff = Math.atan2(Math.sin(diff), Math.cos(diff));
     facing += diff * Math.min(1, dt * 12);
   }
-  facing = forest.facing() ?? park.facing() ?? facing;
+  facing = forest.facing() ?? park.facing() ?? race.facing() ?? facing;
   if (walk.marker?.visible) walk.marker.scale.setScalar(1 + Math.sin(simTime * 6) * 0.12);
-  pos.y += ((forest.height() ?? park.height() ?? floorHeight(pos.x, pos.z)) - pos.y) * Math.min(1, dt * 14);
+  pos.y += ((forest.height() ?? park.height() ?? race.height() ?? floorHeight(pos.x, pos.z)) - pos.y) * Math.min(1, dt * 14);
   player.root.position.copy(pos);
   player.root.rotation.y = facing;
   player.animate(dt, Math.min(1, speed / SETTINGS.WALK_SPEED));
@@ -1282,6 +1359,7 @@ function updateCamera(dt) {
     camGoal.z = Math.max(room.z1 + WALL_GAP, Math.min(room.z2 - WALL_GAP, camGoal.z));
     camGoal.y += Math.max(0, 1.4 - Math.hypot(camGoal.x - pos.x, camGoal.z - pos.z)) * 0.7;
   }
+  if (race.active) race.cameraGoals(camGoal, lookAt, narrow);
   if (snapCamera) { camera.position.copy(camGoal); snapCamera = false; }
   else camera.position.lerp(camGoal, Math.min(1, dt * 6));
   camera.lookAt(lookAt);
@@ -1348,6 +1426,19 @@ function frame(dt, time, draw = true) {
   }
   forest.update(dt, time, me, isQuizOpen() || anyPanelOpen());
   park.update(dt, time, me, isQuizOpen() || anyPanelOpen());
+  race.update(dt, time, me);
+  if (race.inside(pos.x, pos.z) && !save.stats.raceVisited) {
+    save.stats.raceVisited = 1;
+    persist();
+    showBannerFor(t('raceWelcome', { n: SETTINGS.RACE_QUESTIONS }), 10000);
+  }
+  // once the park is known: once a day, a call to the boat race until it has been found
+  if (!save.stats.raceVisited && save.stats.parkVisited && simTime > 60 && save.stats.raceCallDay !== today() && save.stats.parkCallDay !== today() && Math.abs(pos.x) < 20 && pos.z > -14 && !isQuizOpen() && !anyPanelOpen() && !held()) {
+    save.stats.raceCallDay = today();
+    persist();
+    play('row');
+    showBannerFor(t('raceCall'), 10000);
+  }
   // until the child has found the park: once a day, a little tune and a banner pointing the way
   if (!save.stats.parkVisited && simTime > 45 && save.stats.parkCallDay !== today() && Math.abs(pos.x) < 20 && !isQuizOpen() && !anyPanelOpen() && !held()) {
     save.stats.parkCallDay = today();
@@ -1376,6 +1467,7 @@ window.__game = {
   get terrace() { return terrace; },
   get forest() { return forest; },
   get park() { return park; },
+  get race() { return race; },
   get yaw() { return yaw; },
   set yaw(v) { yaw = v; snapCamera = true; },      // for tests: which way the camera looks
   get closeness() { return closeness; },

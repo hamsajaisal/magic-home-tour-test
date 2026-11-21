@@ -43,6 +43,8 @@ export const SETTINGS = {
 
   // ---- Daily bonus ----
   FOREST_QUESTIONS: 5,        // questions at each board on the forest path (Science)
+  RACE_QUESTIONS: 10,         // questions in one boat race (one per leg of the race)
+  RACE_COINS: [30, 20, 12, 6],   // coins for coming 1st, 2nd, 3rd, 4th
   PARK_QUESTIONS: 5,          // maths questions before each ride in the Maths Park
   PARK_CORRECT: 3,            // how many must be right to get on the ride
   FOREST_CORRECT: 3,          // how many must be right to open the next gate

@@ -58,6 +58,7 @@ export function retranslateQuiz(translate) {
 export function openQuiz(opts) {
   S = { ...opts, index: 0, score: 0, tries: 0, marks: [], times: [] };
   el.panel.classList.remove('hidden');
+  el.panel.classList.toggle('docked', !!opts.docked);    // the race stays visible beside the card
   el.result.classList.add('hidden');
   el.body.classList.remove('hidden');
   el.end.classList.toggle('hidden', !opts.canEnd);

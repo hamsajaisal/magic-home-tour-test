@@ -11,7 +11,7 @@ const FILES = [
   'js/main.js', 'js/audio.js', 'js/controls.js', 'js/fx.js', 'js/i18n.js', 'js/progress.js',
   'js/question-format.js', 'js/questions.js', 'js/rewards.js', 'js/storage.js', 'js/voice.js',
   'js/lib/three.module.min.js', 'js/ui/panels.js', 'js/ui/quiz.js', 'js/ui/practice.js', 'js/ui/slate.js', 'js/ui/news.js', 'js/ui/a11y.js', 'js/a11y-mode.js', 'js/world/route.js',
-  'js/world/decor.js', 'js/world/extras.js', 'js/world/forest.js', 'js/world/park.js', 'js/world/house.js', 'js/world/physics.js',
+  'js/world/decor.js', 'js/world/extras.js', 'js/world/forest.js', 'js/world/park.js', 'js/world/race.js', 'js/world/house.js', 'js/world/physics.js',
   'js/world/player.js', 'js/world/props.js', 'js/world/surprises.js', 'js/world/terrace.js',
   'data/rooms.json', 'data/chapters.json', 'data/shop.json', 'data/badges.json', 'data/lang/en.json', 'data/lang/ml.json',
   'data/voice/voice.json', 'data/questions/index.json', 'data/duplicates.json', 'data/whatsnew.json', 'data/a11y-lines.json',

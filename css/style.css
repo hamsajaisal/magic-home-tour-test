@@ -301,3 +301,12 @@ body.touch #tip { bottom: auto; top: 104px; }
 #about p { line-height: 1.5; margin: 8px 0; }
 .about-made { font-weight: 800; }
 .about-link { display: block; width: fit-content; margin: 10px auto 14px; text-align: center; text-decoration: none; }
+
+/* the boat race: the question card sits at the bottom (tall screens) or on the right (wide screens), the race stays visible */
+#quiz.docked { background: transparent; pointer-events: none; align-items: flex-end; padding: 8px; }
+#quiz.docked .quiz-card { pointer-events: auto; max-height: 52%; animation: none; box-shadow: 0 6px 24px rgba(0,0,0,.35); }
+@media (min-aspect-ratio: 5/4) {
+  #quiz.docked { justify-content: flex-end; align-items: center; }
+  #quiz.docked .quiz-card { width: min(44%, 560px); max-height: 100%; }
+}
+.race-pick-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 12px 0; }

@@ -83,7 +83,8 @@ export function buildWorld(scene, rooms, { low }) {
   box(90, 0.1, 90, '#86d45e', 0, -0.1, 4);
   box(2.6, 0.02, 16, '#f2d49b', 0, 0, 20);                      // sand path to the gate
   const lat = '#c8693f';                                         // laterite stone colour
-  box(40, 0.9, 0.4, lat, 0, 0, -14, { collide: true });
+  box(4.8, 0.9, 0.4, lat, -17.6, 0, -14, { collide: true });     // back wall, with a gap for the way to the backwater
+  box(31.2, 0.9, 0.4, lat, 4.4, 0, -14, { collide: true });
   box(0.4, 0.9, 24.5, lat, -20, 0, -1.75, { collide: true });     // west wall, with a gap for the way to the forest
   box(0.4, 0.9, 14.5, lat, -20, 0, 20.75, { collide: true });
   box(0.4, 0.9, 31.5, lat, 20, 0, 1.75, { collide: true });     // east wall, with a gap for the way to the Maths Park
