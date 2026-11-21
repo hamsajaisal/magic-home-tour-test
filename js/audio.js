@@ -51,7 +51,55 @@ function meow(vol) {
   osc.stop(t0 + 0.55);
 }
 
+// a short burst of rushing noise (splash, paddle)
+let noiseBuf = null;
+function noiseBuffer(a) {
+  if (!noiseBuf) {
+    const n = a.sampleRate * 2;
+    noiseBuf = a.createBuffer(1, n, a.sampleRate);
+    const d = noiseBuf.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+  }
+  return noiseBuf;
+}
+function swish(freq, dur, vol, start = 0) {
+  const a = ac();
+  if (!a) return;
+  const t0 = a.currentTime + start;
+  const src = a.createBufferSource();
+  src.buffer = noiseBuffer(a);
+  const f = a.createBiquadFilter();
+  f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = 0.8;
+  const g = a.createGain();
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(vol, t0 + 0.03);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  src.connect(f).connect(g).connect(a.destination);
+  src.start(t0, Math.random());
+  src.stop(t0 + dur + 0.05);
+}
+function sweep(from, to, start, dur, vol) {
+  const a = ac();
+  if (!a) return;
+  const t0 = a.currentTime + start;
+  const osc = a.createOscillator(), g = a.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(from, t0);
+  osc.frequency.exponentialRampToValueAtTime(to, t0 + dur);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(vol, t0 + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  osc.connect(g).connect(a.destination);
+  osc.start(t0);
+  osc.stop(t0 + dur + 0.05);
+}
+
 const SOUNDS = {
+  chime: () => [1568, 2093, 1760, 2349].forEach((f, i) => tone(f, i * 0.12, 0.5, 'triangle', 0.05)),
+  bubbles: () => { for (let i = 0; i < 5; i++) sweep(400 + Math.random() * 500, 1200 + Math.random() * 800, i * 0.11 + Math.random() * 0.05, 0.08, 0.07); },
+  paddle: () => swish(700, 0.35, 0.12),
+  splash: () => { swish(500, 0.9, 0.2); swish(1500, 0.6, 0.1, 0.1); },
+  tweet: () => { sweep(2600, 3800, 0, 0.12, 0.05); sweep(2800, 4200, 0.18, 0.1, 0.05); },
   meow: (vol = 0.12) => meow(vol),
   pop: () => { tone(900, 0, 0.05, 'square', 0.1); tone(300, 0.03, 0.08, 'triangle', 0.1); },
   catch: () => tone(1200 + Math.random() * 400, 0, 0.09, 'triangle', 0.1),
@@ -68,6 +116,32 @@ const SOUNDS = {
 export function play(name, arg) {
   if (!save.settings.sound) return;
   try { SOUNDS[name]?.(arg); } catch (e) { /* sound is optional */ }
+}
+
+// Water you hear from a distance: a running noise loop whose loudness (0 to 1) is set every frame.
+// It only starts once sound has been allowed by a tap, and goes quiet when sound is turned off.
+const LOOPS = { stream: { type: 'bandpass', freq: 900, q: 0.6, max: 0.05 }, fall: { type: 'lowpass', freq: 1100, q: 0.5, max: 0.11 } };
+const loops = {};
+export function ambient(name, vol) {
+  const want = save.settings.sound ? Math.max(0, Math.min(1, vol)) : 0;
+  let L = loops[name];
+  if (!L) {
+    if (want < 0.01 || !ctx || ctx.state !== 'running') return;
+    try {
+      const cfg = LOOPS[name];
+      const src = ctx.createBufferSource();
+      src.buffer = noiseBuffer(ctx);
+      src.loop = true;
+      const f = ctx.createBiquadFilter();
+      f.type = cfg.type; f.frequency.value = cfg.freq; f.Q.value = cfg.q;
+      const g = ctx.createGain();
+      g.gain.value = 0;
+      src.connect(f).connect(g).connect(ctx.destination);
+      src.start();
+      L = loops[name] = { g, max: cfg.max };
+    } catch (e) { return; }
+  }
+  L.g.gain.setTargetAtTime(want * L.max, ctx.currentTime, 0.4);
 }
 
 // Browsers only allow sound after the first tap/click.

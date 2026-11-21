@@ -146,7 +146,7 @@ function setup3D() {
   terrace.setAtticOpen(save.terrace.atticOpen, true);
   terrace.setRescue(rescueStepToday(), true);
   terrace.setTrail(!save.stats.terraceVisited);
-  forest = createForest({ scene, W, low, onFruit: eatFruit });
+  forest = createForest({ scene, W, low, onFruit: eatFruit, onSurprise: forestSurprise });
   forest.setProgress(save.forest.stage, save.forest.done, true);
 
   for (const d of W.doors) {
@@ -545,6 +545,23 @@ function startSwing() {
   forest.startSwing(() => { player.cheer(); dismissed = { key: 'fswing', pos: forest.targets().find((x) => x.kind === 'fswing')?.pos || [pos.x, pos.z] }; });
 }
 
+// Behind each gate a surprise, a bigger one each time: say what it is, and that the next is even better.
+const SURPRISE_SOUNDS = ['chime', 'splash', 'bubbles', 'splash'];
+const SURPRISE_CONFETTI = [['🦋', '🌸', '🌼'], ['💧', '🚣', '🐸'], ['🐠', '🐟', '🫧'], ['🌈', '💧', '✨']];
+function forestSurprise(i) {
+  play(SURPRISE_SOUNDS[i]);
+  player.cheer();
+  confetti(60 + i * 30, SURPRISE_CONFETTI[i]);
+  showBannerFor(t('fsurprise' + i), 9000);
+  if (save.forest.stage <= i + 1) setTimeout(() => toast(t('fsurpriseNext')), 9500);    // the next gate is still closed
+}
+
+function startBoat() {
+  hidePrompt();
+  play('unlock');
+  forest.startBoat(() => { player.cheer(); dismissed = { key: 'fboat', pos: forest.targets().find((x) => x.kind === 'fboat')?.pos || [pos.x, pos.z] }; });
+}
+
 // After finishing, the gates close again for a new trip with new questions.
 function startNewTrip() {
   const F = save.forest;
@@ -622,6 +639,11 @@ function showPrompt(target) {
     $('prompt-text').textContent = t('swingPrompt');
     $('prompt-go').textContent = t('swingGo');
     $('prompt-go').classList.remove('hidden');
+  } else if (target.kind === 'fboat') {
+    $('prompt-emoji').textContent = '🚣';
+    $('prompt-text').textContent = t('boatPrompt');
+    $('prompt-go').textContent = t('boatGo');
+    $('prompt-go').classList.remove('hidden');
   } else if (target.kind === 'fnew') {
     $('prompt-emoji').textContent = '🌳🥾';
     $('prompt-text').textContent = t('newTripPrompt', { n: save.forest.trips });
@@ -665,6 +687,7 @@ function act() {
   else if (prompt.kind === 'fboard') startForestBoard();
   else if (prompt.kind === 'ftree') startTree();
   else if (prompt.kind === 'fswing') startSwing();
+  else if (prompt.kind === 'fboat') startBoat();
   else if (prompt.kind === 'fnew') startNewTrip();
   else openGift(prompt.gift);
 }
@@ -742,7 +765,7 @@ function refreshSigns() {
   }
   extras.refreshSigns({ cupboard: t('cupboardName'), well: t('wellName') }, wrongQuestions(save, lang()).length);
   terrace.refreshSigns({ terrace: t('terraceName'), attic: t('atticName') }, save.terrace.keys.length, save.terrace.atticOpen);
-  forest.refreshSigns({ forest: t('forestName'), toForest: t('forestSign'), board: t('forestBoard') });
+  forest.refreshSigns({ forest: t('forestName'), toForest: t('forestSign'), board: t('forestBoard'), behind: t('forestBehind') });
   W.titleSign.material.map?.dispose();
   W.titleSign.material.map = labelTexture(`🏡 ${t('title')}`, '#ff8a3d', '#ffffff');
   W.titleSign.material.needsUpdate = true;
@@ -1139,7 +1162,7 @@ function updatePlayer(dt) {
   if (pathYaw !== null) {
     const off = Math.atan2(Math.sin(pathYaw - yaw), Math.cos(pathYaw - yaw));
     sideways = Math.abs(Math.sin(off));
-    if (forest.climbing || (Math.hypot(vel.x, vel.y) > 0.5 && simTime - lastTurn > HAND_TURN_SECONDS)) yaw += off * Math.min(1, dt * 2);
+    if (forest.climbing || forest.riding || (Math.hypot(vel.x, vel.y) > 0.5 && simTime - lastTurn > HAND_TURN_SECONDS)) yaw += off * Math.min(1, dt * 2);
   }
   const mv = playing && !forest.holds() ? getMove() : { x: 0, y: 0 };
   useClick();
@@ -1292,7 +1315,7 @@ function frame(dt, time, draw = true) {
     persist();
     terrace.setTrail(false);
   }
-  forest.update(dt, time, me);
+  forest.update(dt, time, me, isQuizOpen() || anyPanelOpen());
   if (pos.x < -22 && !save.stats.forestVisited) {
     save.stats.forestVisited = 1;
     persist();

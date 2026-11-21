@@ -17,7 +17,7 @@ const FOREST_START = { x: PATH[0][0], z: PATH[0][1] };
 const WORDS = {
   ml: {
     zone: { yard: 'മുറ്റം', steps: 'മുൻവശത്തെ പടികൾ', veranda: 'പൂമുഖം', hall: 'അകത്തളം', courtyard: 'നടുമുറ്റം', backhall: 'പിൻവശത്തെ ഹാൾ', garden: 'തോട്ടം', stairs: 'ടെറസിലേക്കുള്ള പടികൾ', terrace: 'ടെറസ്', forest: 'കാട്ടിലെ വഴി' },
-    place: { frontdoor: 'വീടിന്റെ മുൻവാതിൽ', steps: 'മുൻവശത്തെ പടികൾ', tulsi: 'നടുമുറ്റത്തെ തുളസിത്തറ', lamp: 'നിലവിളക്ക്', cupboard: 'പുനരവലോകന അലമാര', well: 'തോട്ടത്തിലെ ആഗ്രഹക്കിണർ', stairs: 'ടെറസിലേക്കുള്ള പടികൾ', forest: 'കാട്ടിലേക്കുള്ള വഴി', yard: 'മുൻവശത്തെ മുറ്റം', kite: 'പട്ടം', telescope: 'ദൂരദർശിനി', pool: 'നീന്തൽക്കുളം', attic: 'രഹസ്യ മുറി', chest: 'നിധിപ്പെട്ടി', fboard: 'അടുത്ത ചോദ്യപ്പലക', ftree: 'വലിയ മരം', fswing: 'ഊഞ്ഞാൽ', fnew: 'പുതിയ യാത്ര' },
+    place: { frontdoor: 'വീടിന്റെ മുൻവാതിൽ', steps: 'മുൻവശത്തെ പടികൾ', tulsi: 'നടുമുറ്റത്തെ തുളസിത്തറ', lamp: 'നിലവിളക്ക്', cupboard: 'പുനരവലോകന അലമാര', well: 'തോട്ടത്തിലെ ആഗ്രഹക്കിണർ', stairs: 'ടെറസിലേക്കുള്ള പടികൾ', forest: 'കാട്ടിലേക്കുള്ള വഴി', yard: 'മുൻവശത്തെ മുറ്റം', kite: 'പട്ടം', telescope: 'ദൂരദർശിനി', pool: 'നീന്തൽക്കുളം', attic: 'രഹസ്യ മുറി', chest: 'നിധിപ്പെട്ടി', fboard: 'അടുത്ത ചോദ്യപ്പലക', ftree: 'വലിയ മരം', fswing: 'ഊഞ്ഞാൽ', fboat: 'അരുവിയിലെ തോണി', fnew: 'പുതിയ യാത്ര' },
     door: (r) => `${r} – വാതിൽ`, locked: (r) => `${r} – വാതിൽ (പൂട്ടിയത്)`, gift: (r) => `സമ്മാനപ്പെട്ടി (${r})`,
     ahead: 'നേരെ മുന്നിൽ', left: 'ഇടതുവശത്ത്', right: 'വലതുവശത്ത്', behind: 'പിന്നിൽ', frontLeft: 'മുന്നിൽ ഇടത്തായി', frontRight: 'മുന്നിൽ വലത്തായി', backLeft: 'പിന്നിൽ ഇടത്തായി', backRight: 'പിന്നിൽ വലത്തായി',
     turnLeft: 'ഇടത്തോട്ട്', turnRight: 'വലത്തോട്ട്',
@@ -30,7 +30,7 @@ const WORDS = {
   },
   en: {
     zone: { yard: 'the front yard', steps: 'the front steps', veranda: 'the veranda', hall: 'the hall', courtyard: 'the courtyard', backhall: 'the back hall', garden: 'the garden', stairs: 'the terrace stairs', terrace: 'the terrace', forest: 'the forest path' },
-    place: { frontdoor: 'the front door', steps: 'the front steps', tulsi: 'the tulsi stand in the courtyard', lamp: 'the brass lamp', cupboard: 'the revision cupboard', well: 'the wishing well', stairs: 'the terrace stairs', forest: 'the way to the forest', yard: 'the front yard', kite: 'the kite', telescope: 'the telescope', pool: 'the pool', attic: 'the secret room', chest: 'the treasure chest', fboard: 'the next question board', ftree: 'the big tree', fswing: 'the swing', fnew: 'a new trip' },
+    place: { frontdoor: 'the front door', steps: 'the front steps', tulsi: 'the tulsi stand in the courtyard', lamp: 'the brass lamp', cupboard: 'the revision cupboard', well: 'the wishing well', stairs: 'the terrace stairs', forest: 'the way to the forest', yard: 'the front yard', kite: 'the kite', telescope: 'the telescope', pool: 'the pool', attic: 'the secret room', chest: 'the treasure chest', fboard: 'the next question board', ftree: 'the big tree', fswing: 'the swing', fboat: 'the boat on the stream', fnew: 'a new trip' },
     door: (r) => `the ${r} door`, locked: (r) => `the ${r} door (locked)`, gift: (r) => `the gift box in the ${r}`,
     ahead: 'straight ahead', left: 'on your left', right: 'on your right', behind: 'behind you', frontLeft: 'ahead on the left', frontRight: 'ahead on the right', backLeft: 'behind on the left', backRight: 'behind on the right',
     turnLeft: 'left', turnRight: 'right',
