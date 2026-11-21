@@ -34,7 +34,14 @@
       { "en": "Reciprocals", "ml": "വിപരീതഭിന്നങ്ങൾ", "match": ["reciprocals", "chapter 4"] },
       { "en": "Decimal Methods", "ml": "ദശാംശരീതികൾ", "match": ["decimal methods", "chapter 5"] },
       { "en": "Ratio", "ml": "അംശബന്ധം", "match": ["ratio", "chapter 6"] },
-      { "en": "Shorthand Math", "ml": "കണക്കിലെ ചുരുക്കെഴുത്ത്", "match": ["shorthand math", "chapter 7"] }
+      { "en": "Shorthand Math", "ml": "കണക്കിലെ ചുരുക്കെഴുത്ത്", "match": ["shorthand math", "chapter 7"] },
+      { "en": "Repeated Multiplication", "ml": "ആവർത്തനഗുണനം", "match": ["repeated multiplication", "chapter 8"] },
+      { "en": "Number Relations", "ml": "സംഖ്യാബന്ധങ്ങൾ", "match": ["number relations", "chapter 9"] },
+      { "en": "Area of Triangles", "ml": "ത്രികോണപ്പരപ്പ്", "match": ["area of triangles", "chapter 10"] },
+      { "en": "Squares and Right Triangles", "ml": "സമചതുരങ്ങളും മട്ടത്രികോണങ്ങളും", "match": ["squares and right triangles", "chapter 11"] },
+      { "en": "Algebra", "ml": "ബീജഗണിതം", "match": ["algebra", "chapter 12"] },
+      { "en": "Percents", "ml": "ശതമാനം", "match": ["percents", "chapter 13"] },
+      { "en": "Data Pictures", "ml": "വിവരചിത്രങ്ങൾ", "match": ["data pictures", "chapter 14"] }
     ],
     "malayalam": [
       { "en": "Unit 1: Kathirchoodum Nadinperumakal", "ml": "യൂണിറ്റ് 1: കതിർചൂടും നാടിൻപെരുമകൾ", "match": ["unit 1"] },

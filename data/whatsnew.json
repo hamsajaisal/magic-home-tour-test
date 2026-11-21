@@ -2,6 +2,11 @@
   "_help": "The list behind the What's New button, newest first. Add a line at the top each time something big reaches the main site: only what is live there, not what is still on the test site. Lines with the same date show together.",
   "items": [
     {
+      "date": "2026-11-21",
+      "ml": "കണക്ക് പാഠപുസ്തകം രണ്ടാം ഭാഗത്തിൽനിന്ന് 363 പുതിയ ചോദ്യങ്ങൾ: ആവർത്തനഗുണനം, സംഖ്യാബന്ധങ്ങൾ, ത്രികോണപ്പരപ്പ്, സമചതുരങ്ങളും മട്ടത്രികോണങ്ങളും, ബീജഗണിതം, ശതമാനം, വിവരചിത്രങ്ങൾ.",
+      "en": "363 new questions from Maths textbook part 2: Repeated Multiplication, Number Relations, Area of Triangles, Squares and Right Triangles, Algebra, Percents and Data Pictures."
+    },
+    {
       "date": "2026-11-10",
       "ml": "സ്ക്രീൻ റീഡർ ഉപയോഗിക്കുന്നവർക്ക്: കളിക്കുമ്പോൾ കീകൾ നേരെ ഗെയിമിൽ എത്തും, പേജുകൾ തുറക്കുന്നതും ചോദ്യങ്ങളും വാതിലിനടുത്തെ സന്ദേശങ്ങളും നാണയം കിട്ടുന്നതും വായിക്കും, Escape കൊണ്ട് പേജ് അടയ്ക്കാം.",
       "en": "For screen reader users: keys go straight to the game, and pages, questions, messages at doors and coins received are read out. Escape closes a page."
