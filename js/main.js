@@ -796,7 +796,7 @@ function refreshSigns() {
   }
   extras.refreshSigns({ cupboard: t('cupboardName'), well: t('wellName') }, wrongQuestions(save, lang()).length);
   terrace.refreshSigns({ terrace: t('terraceName'), attic: t('atticName') }, save.terrace.keys.length, save.terrace.atticOpen);
-  park.refreshSigns({ park: t('parkName') });
+  park.refreshSigns({ park: t('parkName'), toPark: t('parkSign'), parkRides: t('parkBoard') });
   forest.refreshSigns({ forest: t('forestName'), toForest: t('forestSign'), board: t('forestBoard'), behind: t('forestBehind') });
   W.titleSign.material.map?.dispose();
   W.titleSign.material.map = labelTexture(`🏡 ${t('title')}`, '#ff8a3d', '#ffffff');
@@ -1348,6 +1348,13 @@ function frame(dt, time, draw = true) {
   }
   forest.update(dt, time, me, isQuizOpen() || anyPanelOpen());
   park.update(dt, time, me, isQuizOpen() || anyPanelOpen());
+  // until the child has found the park: once a day, a little tune and a banner pointing the way
+  if (!save.stats.parkVisited && simTime > 45 && save.stats.parkCallDay !== today() && Math.abs(pos.x) < 20 && !isQuizOpen() && !anyPanelOpen() && !held()) {
+    save.stats.parkCallDay = today();
+    persist();
+    play('tune');
+    showBannerFor(t('parkCall'), 10000);
+  }
   if (park.inside(pos.x, pos.z) && !save.stats.parkVisited) {
     save.stats.parkVisited = 1;
     persist();

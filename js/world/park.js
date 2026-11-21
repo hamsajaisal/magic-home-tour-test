@@ -100,6 +100,15 @@ export function createPark({ scene, W, low }) {
   box(0.25, 0.35, 4.7, '#ffd23d', PARK.x1, 3.3, 19.5);
   const archSign = sign(3.6, 0.8, PARK.x1 - 0.15, 2.85, 19.5, -Math.PI / 2);
   const archBack = sign(3.6, 0.8, PARK.x1 + 0.15, 2.85, 19.5, Math.PI / 2);
+  // signs the child sees from the front yard: a post by the front path and a big board near the gap
+  cyl(0.05, 0.05, 1.7, '#6b3518', 2.4, 0, 15.4);
+  const postSign = sign(2.4, 0.55, 2.4, 1.75, 15.45, 0);
+  const boardAngle = Math.atan2(-16, -7);                // facing the front steps
+  const bx = 17.6, bz = 23.4;
+  for (const s of [-1, 1]) cyl(0.12, 0.14, 3.2, '#ff5d8f', bx + Math.cos(boardAngle) * 1.9 * s, 0, bz - Math.sin(boardAngle) * 1.9 * s);
+  const billboard = sign(4.4, 1.6, bx, 3.6, bz, boardAngle);
+  const billIcon = sprite('🎡', bx, 5.1, bz, 1.2);
+  col(bx - 2.1, bx + 2.1, bz - 0.4, bz + 0.4);
   for (let k = 0; k < (low ? 4 : 8); k++) {                                   // balloons on the arch
     const b = ball(0.28, fenceColors[k % 4], PARK.x1, 3.9 + (k % 2) * 0.35, 17.4 + k * (4.2 / ((low ? 4 : 8) - 1)));
     b.scale.y = 1.2;
@@ -333,6 +342,9 @@ export function createPark({ scene, W, low }) {
     inside(x, z) { return x > PARK.x1 + 0.2 && x < PARK.x2 && z > PARK.z1 && z < PARK.z2; },
 
     refreshSigns(names) {
+      const paint = (m, lines, bg) => { m.material.map?.dispose(); m.material.map = labelTexture(lines, bg, '#ffffff'); m.material.needsUpdate = true; };
+      paint(postSign, `🎡 ${names.toPark} ➡`, '#ff5d8f');
+      paint(billboard, [`🎡 ${names.park}`, names.parkRides], '#3d7bff');
       for (const [m, flip] of [[archSign, false], [archBack, true]]) {
         m.material.map?.dispose();
         m.material.map = labelTexture(flip ? `${names.park} 🎡` : `🎡 ${names.park}`, '#ff5d8f', '#ffffff');
@@ -367,6 +379,7 @@ export function createPark({ scene, W, low }) {
       const near = me.x > 0;
       root.visible = me.x > -25;
       if (!root.visible) return;
+      billIcon.position.y = 5.1 + Math.sin(time * 2.5) * 0.15;
       for (const [id, s] of Object.entries(rideIcons)) {
         s.visible = S.ride !== id;
         const base = id === 'wheel' ? WHEEL.y + WHEEL.r + 1.4 : id === 'merry' ? 5 : id === 'slide' ? SLIDE.top + 1.6 : id === 'rain' ? RAIN.top + 1.4 : 2.3;
