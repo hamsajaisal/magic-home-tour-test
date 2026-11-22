@@ -21,13 +21,22 @@ function setName(raw) {
   return name;
 }
 
+// The guide is a list of sections in the language files: [{ h: heading, p: [points] }].
+// Headings are real headings, so screen reader users can jump between them (H key in NVDA).
 function renderGuide() {
-  const list = $('guide-list');
-  list.textContent = '';
-  for (const line of [].concat(tIn(lang(), 'guideItems'))) {
-    const li = document.createElement('li');
-    li.textContent = line.replace('{n}', opts.n).replace('{k}', opts.k);
-    list.append(li);
+  const box = $('guide-list');
+  box.textContent = '';
+  const fill = (s) => s.replace(/\{n\}/g, opts.n).replace(/\{k\}/g, opts.k);
+  for (const sec of [].concat(tIn(lang(), 'guide'))) {
+    const h = document.createElement('h3');
+    h.textContent = sec.h;
+    const ul = document.createElement('ul');
+    for (const point of sec.p) {
+      const li = document.createElement('li');
+      li.textContent = fill(point);
+      ul.append(li);
+    }
+    box.append(h, ul);
   }
 }
 

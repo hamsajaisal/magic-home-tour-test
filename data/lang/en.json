@@ -395,17 +395,6 @@
   "guideBtn": "❓ How to play",
   "guideTitle": "❓ How to play",
   "guideOk": "Let's play! 🎮",
-  "guideItems": [
-    "🚶 Walk: on a phone, use the round joystick. On a computer, use the arrow keys or W A S D. Turn with the ⟲ ⟳ buttons or by dragging on the screen.",
-    "🚪 Go into the house and walk up to a locked room's door. Answer {n} questions. Get {k} right and the room opens!",
-    "🎁 Each room you open opens a new place outside: the Terrace, the Forest, the Maths Park, the Boat race and the Space centre. The boards in the front yard show the way.",
-    "🪙 Gift boxes, the Wishing Well and the places outside give you coins. Buy fun things in the shop 🛍️ with your coins!",
-    "💡 Wrong answer? You get a hint and one more try.",
-    "📚 Questions you found tricky wait for you in the revision cupboard at the back of the hall.",
-    "✏️ For maths, open the slate next to the question and work it out.",
-    "📊 'My progress' shows how you are doing. Want only questions, no walking? Choose 'Quiz only mode' on the start screen.",
-    "⚙️ In Settings: language, sound, your name, joystick side, and an accessibility mode for children with low vision."
-  ],
   "nameTitle": "What's your name? 😊",
   "nameText": "We will cheer for you by name! Your name stays only on this phone or computer. It is never sent anywhere.",
   "nameLabel": "Your name (a nickname is fine)",
@@ -423,5 +412,93 @@
   "nameStreak": "{name}, three in a row! Hat-trick! 🔥",
   "nameHint": "Never mind, {name}! Here's a hint:",
   "nameNoHint": "Never mind, {name}! Think again — you can do it!",
-  "nameScore": "{name}, you got {s} out of {n} right!"
+  "nameScore": "{name}, you got {s} out of {n} right!",
+  "guide": [
+    {
+      "h": "🎮 What is this game?",
+      "p": [
+        "Walk through a magic house, answer questions and get ready for the USS exam.",
+        "Right answers open rooms and new places, and give you coins and surprises."
+      ]
+    },
+    {
+      "h": "🚶 How do I walk?",
+      "p": [
+        "On a phone: drag the round joystick at the bottom with your thumb. You can move it to the other side in Settings.",
+        "To turn on a phone: drag your finger on the other half of the screen, or tap the ⟲ ⟳ buttons.",
+        "On a computer: the arrow keys or W A S D. You can also click a spot on the floor and the child walks there.",
+        "On a computer, Alt+1 to Alt+6 open the shop, album, my progress, language, sound and Settings."
+      ]
+    },
+    {
+      "h": "🚪 How do I open a room?",
+      "p": [
+        "Climb the front steps and go into the house. There are 6 rooms. A locked door has a 🔒.",
+        "Stand near a locked door. A box appears: tap 'Start questions'.",
+        "Answer {n} questions. If {k} are right on the first try, the door opens!",
+        "Not enough right? No problem. Try again. You lose nothing.",
+        "Each room is one subject: Maths, Science, Malayalam, English, Social Science and GK."
+      ]
+    },
+    {
+      "h": "💡 During a question",
+      "p": [
+        "Wrong answer? You get a hint and one more try.",
+        "Wrong again? The game shows the right answer and explains why.",
+        "Only answers right on the first try count for opening the door.",
+        "The 🔈 button reads the question aloud. The language button switches between Malayalam and English, even in the middle of a question."
+      ]
+    },
+    {
+      "h": "🗺️ Places outside the house",
+      "p": [
+        "Each room you open opens one new place outside, in this order:",
+        "1. ☀️ Terrace: stairs on the right side of the house. A kite, a telescope, a swimming pool and a secret hut.",
+        "2. 🌳 Forest: through the left wall. Science questions at each gate, a surprise behind every gate, and a big tree to climb.",
+        "3. 🎡 Maths Park: through the right wall. Ride the seesaw, slide, merry-go-round, water slide and giant wheel by answering maths questions.",
+        "4. 🚣 Boat race: behind the house. Choose a subject. Answer quickly and correctly and your boat goes faster!",
+        "5. 🚀 Space centre: through the far gate of the Maths Park. Build a rocket and fly to the Moon.",
+        "The two boards in the front yard show the way, and how many more rooms each place needs."
+      ]
+    },
+    {
+      "h": "🎁 Surprises and coins",
+      "p": [
+        "Every open room has a gift box. One surprise is free each day. After that, answer a few questions for more.",
+        "Each day one room is the secret room 🌟. Its surprise gives double coins.",
+        "Play every day for a daily bonus 🔥.",
+        "The Wishing Well in the garden gives coins for a mix of questions.",
+        "Spend your coins in the shop 🛍️: decorations, pets that follow you, and costumes.",
+        "Badges and stickers you win are kept in your album 📒."
+      ]
+    },
+    {
+      "h": "📚 To learn better",
+      "p": [
+        "Questions you found tricky wait in the revision cupboard at the back of the hall. Practise them again.",
+        "📊 'My progress' shows how you do in each subject and which questions to practise.",
+        "✏️ For maths, open the slate next to the question and work it out with your finger.",
+        "📝 Want only questions, no walking? Choose 'Quiz only mode' on the start screen. Pick a subject and a chapter."
+      ]
+    },
+    {
+      "h": "♿ For children with low vision or who cannot see the screen",
+      "p": [
+        "There is an accessibility mode for children who use a screen reader such as NVDA on a laptop.",
+        "To turn it on: open Settings (Alt+6) and tick Accessibility mode.",
+        "The screen reader tells you where you are and what is near you. The game helps you walk to each place.",
+        "Keys: Up and Down arrows walk. Left and Right arrows turn. L tells where you are. G opens a list of places to walk to. Enter starts what is near you. H gives the full list of keys.",
+        "In a question: Tab to the answers and press Enter to choose."
+      ]
+    },
+    {
+      "h": "⚙️ Settings",
+      "p": [
+        "Language (Malayalam or English) and Malayalam script (old or new).",
+        "Sound, spoken praise, reading questions aloud, and your name.",
+        "Joystick side, simple graphics for slow phones, and a closer view inside rooms.",
+        "What's new, About, Credits, and starting the game again from the beginning."
+      ]
+    }
+  ]
 }

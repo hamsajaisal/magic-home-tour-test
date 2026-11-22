@@ -289,8 +289,10 @@ body.touch #tip { bottom: auto; top: 104px; }
 }
 /* the About page opens over the start screen too, and Credits over About */
 #about, #news, #a11y-intro, #a11y-help, #a11y-goto, #guide, #name-ask { z-index: 55; }
-#guide-list { margin: 0; padding-left: 4px; list-style: none; }
-#guide-list li { margin: 10px 0; line-height: 1.5; font-size: 1.05rem; }
+#guide-list h3 { margin: 18px 0 6px; padding: 6px 12px; border-radius: 12px; background: #fff1d6; color: var(--orange-dark); font-size: 1.1rem; }
+#guide-list h3:first-child { margin-top: 4px; }
+#guide-list ul { margin: 0; padding-left: 22px; }
+#guide-list li { margin: 6px 0; line-height: 1.55; font-size: 1.02rem; }
 .name-label { display: block; font-weight: 700; margin: 8px 0 6px; }
 .name-input { font: inherit; font-size: 1.15rem; padding: 8px 12px; border-radius: 14px; border: 3px solid #ffd27a; width: min(100%, 260px); }
 #name-ask .name-input { display: block; margin: 0 auto 6px; text-align: center; }
