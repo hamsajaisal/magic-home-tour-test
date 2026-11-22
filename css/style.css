@@ -288,7 +288,12 @@ body.touch #tip { bottom: auto; top: 104px; }
   background-size: 34px 34px;
 }
 /* the About page opens over the start screen too, and Credits over About */
-#about, #news, #a11y-intro, #a11y-help, #a11y-goto { z-index: 55; }
+#about, #news, #a11y-intro, #a11y-help, #a11y-goto, #guide, #name-ask { z-index: 55; }
+#guide-list { margin: 0; padding-left: 4px; list-style: none; }
+#guide-list li { margin: 10px 0; line-height: 1.5; font-size: 1.05rem; }
+.name-label { display: block; font-weight: 700; margin: 8px 0 6px; }
+.name-input { font: inherit; font-size: 1.15rem; padding: 8px 12px; border-radius: 14px; border: 3px solid #ffd27a; width: min(100%, 260px); }
+#name-ask .name-input { display: block; margin: 0 auto 6px; text-align: center; }
 .a11y-btn { display: block; margin: 0 auto 6px; }
 .a11y-keys { padding-left: 20px; line-height: 1.6; }
 .a11y-goto-list { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; text-align: left; }

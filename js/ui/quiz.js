@@ -7,6 +7,7 @@ import { LETTERS } from '../question-format.js';
 import { save, persist, today } from '../storage.js';
 import { SETTINGS } from '../../settings.js';
 import { newSlate, closeSlate, isSlateOpen } from './slate.js';
+import { childName } from './guide.js';
 
 const $ = (id) => document.getElementById(id);
 const el = {
@@ -91,13 +92,32 @@ export function closeQuiz() {
 }
 
 // the same praise word in both languages (so a spoken English fallback matches)
-function praise(l = lang()) {
+function plainPraise(l) {
   const list = [].concat(tIn(l, 'praise'));
   return list[S.praiseIdx % list.length];
 }
 
+// Now and then the praise on screen uses the child's name (S.named is chosen once per answer,
+// so switching the language keeps the same kind of praise). Spoken praise never says the name:
+// the phone's voice may say a Malayalam name wrongly.
+function praise(l = lang()) {
+  const name = childName();
+  if (!name || !S.named) return plainPraise(l);
+  if (S.named === 'streak') return tIn(l, 'nameStreak').replace('{name}', name);
+  const list = [].concat(tIn(l, 'namePraise'));
+  return list[S.praiseIdx % list.length].replace('{name}', name);
+}
+
+// when to use the name: every third right answer in a row, otherwise about one right answer in three
+function chooseNamed(firstTry) {
+  S.run = firstTry ? (S.run || 0) + 1 : 0;
+  if (!childName()) return null;
+  if (S.run && S.run % 3 === 0) return 'streak';
+  return Math.random() < SETTINGS.NAME_PRAISE_CHANCE ? 'praise' : null;
+}
+
 function speak(kind, key) {
-  const pickText = (l) => (key === 'praise' ? praise(l) : tIn(l, key));
+  const pickText = (l) => (key === 'praise' ? plainPraise(l) : tIn(l, key));
   say(kind, lang(), { ml: pickText('ml'), en: pickText('en') });
 }
 
@@ -190,8 +210,8 @@ function renderFeedback() {
   const right = item.options.findIndex((o) => o.correct);
   if (!S.fb) el.feedback.className = 'feedback hidden';
   else if (S.fb === 'good') feedback('good', praise(), item.explanation ? `${t('why')} ${item.explanation}` : '');
-  else if (S.fb === 'hint' && item.hint) feedback('hint', t('wrongHint'), `${item.hint} ${t('tryOnce')}`);
-  else if (S.fb === 'hint') feedback('hint', t('noHint'), t('tryOnce'));
+  else if (S.fb === 'hint' && item.hint) feedback('hint', S.namedHint ? t('nameHint', { name: childName() }) : t('wrongHint'), `${item.hint} ${t('tryOnce')}`);
+  else if (S.fb === 'hint') feedback('hint', S.namedHint ? t('nameNoHint', { name: childName() }) : t('noHint'), t('tryOnce'));
   else feedback('explain', `${t('correctAnswerIs')} ${LETTERS[right]}. ${item.options[right].text}`, item.explanation);
 }
 
@@ -219,6 +239,7 @@ function pickOption(i) {
     S.marks[S.index] = firstTry ? 'ok' : 'bad';
     play('correct');
     S.praiseIdx = Math.floor(Math.random() * 100);
+    S.named = chooseNamed(firstTry);
     S.fb = 'good';
     renderFeedback();
     speak('praise', 'praise');
@@ -232,6 +253,8 @@ function pickOption(i) {
   buttons[i].disabled = true;
   play('wrong');
   if (firstTry) {
+    S.run = 0;
+    S.namedHint = !!childName() && Math.random() < SETTINGS.NAME_HINT_CHANCE;
     S.fb = 'hint';
     renderFeedback();
     speak('tryAgain', 'tryOnce');
@@ -325,7 +348,8 @@ function showResult() {
   }
   const res = S.onFinish(S.score, S.items.length);
   el.rStars.innerHTML = [1, 2, 3].map((n) => `<span class="${n <= res.stars ? '' : 'off'}">⭐</span>`).join('');
-  const scoreText = t('resultScore', { s: S.score, n: S.items.length });
+  const name = childName();
+  const scoreText = name ? t('nameScore', { name, s: S.score, n: S.items.length }) : t('resultScore', { s: S.score, n: S.items.length });
   if (res.passed) {
     el.rEmoji.textContent = '🎉';
     el.rTitle.textContent = t(S.passTitle || 'resultPass');

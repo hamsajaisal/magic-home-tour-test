@@ -21,6 +21,7 @@ import { openQuiz, isQuizOpen, retranslateQuiz } from './ui/quiz.js';
 import { initPanels, openShop, openAlbum, openDaily, openProgress } from './ui/panels.js';
 import { initPractice, openPractice } from './ui/practice.js';
 import { initNews } from './ui/news.js';
+import { initGuide, firstTimeSteps, showNameInSettings } from './ui/guide.js';
 import { announce, initDialogs } from './ui/a11y.js';
 import { createA11yMode } from './a11y-mode.js';
 import {
@@ -75,6 +76,11 @@ async function boot() {
   await initPractice({ rooms, onExit: () => $('start').classList.remove('hidden') });
   setupInstall();
   await initNews({ beforeOpen: () => { hidePrompt(); setControlsEnabled(false); $('settings').classList.add('hidden'); } });
+  initGuide({
+    n: SETTINGS.QUESTIONS_PER_QUIZ, k: SETTINGS.CORRECT_TO_UNLOCK, toast,
+    beforeOpen: () => { hidePrompt(); setControlsEnabled(false); },
+    afterClose: () => setControlsEnabled(!isQuizOpen() && !anyPanelOpen()),
+  });
   refreshAll();
   $('loading').classList.add('hidden');
   $('start').classList.remove('hidden');
@@ -313,8 +319,8 @@ function startWellQuiz() {
     passTitle: 'mixPass', passButton: 'continue',
     onPassed: () => {
       addCoins(SETTINGS.COINS_FOR_UNLOCK);
-      toast(t('coinsEarned', { c: SETTINGS.COINS_FOR_UNLOCK }));
-      confetti(90, ['💧', '🪙', '✨']);
+      toast(t('wellCoins', { c: SETTINGS.COINS_FOR_UNLOCK }));
+      confetti(90, ['🪙', '🪙', '✨']);
       player.cheer();
       bumpStat('wells');
     },
@@ -820,9 +826,15 @@ function showPrompt(target) {
     const room = target.door.room;
     const { n, k } = quizSize(room);
     $('prompt-emoji').textContent = `${room.emoji}🔒`;
-    $('prompt-text').textContent = n ? t('lockedPrompt', { room: pick(room.name), n, k }) : t('noQuestions');
+    const next = nextPlaceText();
+    $('prompt-text').textContent = n ? `${t('lockedPrompt', { room: pick(room.name), n, k })}${next ? ' ' + t('doorBonus', { place: next }) : ''}` : t('noQuestions');
     $('prompt-go').textContent = t('startQuiz');
     $('prompt-go').classList.toggle('hidden', !n);
+  } else if (target.kind === 'barrier') {
+    const p = PLACE_ORDER.find((x) => x.id === target.place);
+    $('prompt-emoji').textContent = `${p.emoji}🔒`;
+    $('prompt-text').textContent = t('barrierPrompt', { place: t('place_' + p.id), more: moreRooms(places.roomsLeft(p.id)) });
+    $('prompt-go').classList.add('hidden');
   } else if (target.kind === 'well') {
     $('prompt-emoji').textContent = '🪣✨';
     $('prompt-text').textContent = t('wellPrompt', { n: SETTINGS.QUESTIONS_PER_QUIZ });
@@ -936,7 +948,7 @@ function hidePrompt() {
 }
 
 function act() {
-  if (!prompt || isQuizOpen()) return;
+  if (!prompt || isQuizOpen() || prompt.kind === 'barrier') return;
   unlockAudio();
   play('click');
   if (prompt.kind === 'door') startDoorQuiz(prompt.door);
@@ -979,6 +991,7 @@ function checkPrompts() {
     if (!isUp(pos.y)) targets.push(...park.targets(), ...race.targets(), ...space.targets(save.space.parts));
     for (const g of surprises.gifts) if (g.group.visible) targets.push({ kind: 'gift', key: `gift:${g.room.id}`, gift: g, pos: g.pos, r: 1.3 });
     targets.push({ kind: 'well', key: 'well', pos: extras.well.pos, r: 2.0 });
+    if (!isUp(pos.y)) for (const b of places.closedSpots()) targets.push({ kind: 'barrier', key: `barrier:${b.id}`, place: b.id, pos: b.pos, r: 2.4 });
     targets.push({ kind: 'cupboard', key: 'cupboard', pos: extras.cupboard.pos, r: 1.3 });
   }
   let near = null, best = Infinity;
@@ -996,7 +1009,7 @@ function checkPrompts() {
   if (!prompt && walked > 3 && walked < 4 && !rooms.some((r) => roomState(r.id).unlocked)) setTip(t('goToDoor'));
 }
 
-const PANELS = ['race-pick', 'shop', 'album', 'daily', 'settings', 'credits', 'progress', 'about', 'news', 'a11y-intro', 'a11y-help', 'a11y-goto'];
+const PANELS = ['race-pick', 'shop', 'album', 'daily', 'settings', 'credits', 'progress', 'about', 'news', 'guide', 'name-ask', 'a11y-intro', 'a11y-help', 'a11y-goto'];
 let a11yMode = null;
 const anyPanelOpen = () => PANELS.some((id) => !$(id).classList.contains('hidden'));
 
@@ -1025,17 +1038,33 @@ function refreshHUD() {
   });
 }
 
+const moreRooms = (n) => t(n === 1 ? 'placeMore1' : 'placeMoreN', { n });
+// the place the next opened room will open, as "☀️ Terrace" (or '' when every place is open)
+function nextPlaceText() {
+  const p = places.nextPlace();
+  return p ? `${p.emoji} ${t('place_' + p.id)}` : '';
+}
+
 function refreshSigns() {
+  const next = nextPlaceText();
   for (const d of W.doors) {
     const rs = roomState(d.room.id);
-    const second = rs.unlocked ? '⭐'.repeat(rs.stars) + '☆'.repeat(3 - rs.stars) : `🔒 ${quizSize(d.room).n} ❓`;
+    const second = rs.unlocked ? '⭐'.repeat(rs.stars) + '☆'.repeat(3 - rs.stars)
+      : next ? `🔒 ${t('doorOpens', { place: next })}` : `🔒 ${quizSize(d.room).n} ❓`;
     d.sign.material.map?.dispose();
     d.sign.material.map = labelTexture([`${d.room.emoji} ${pick(d.room.name)}`, second], d.room.color, '#3a2a1a');
     d.sign.material.needsUpdate = true;
   }
   extras.refreshSigns({ cupboard: t('cupboardName'), well: t('wellName') }, wrongQuestions(save, lang()).length);
   terrace.refreshSigns({ terrace: t('terraceName'), attic: t('atticName') }, save.terrace.keys.length, save.terrace.atticOpen);
-  places.refreshSigns({ place: Object.fromEntries(PLACE_ORDER.map((p) => [p.id, t('place_' + p.id)])), rooms: (n) => t('placeNeedRooms', { n }) });
+  places.refreshSigns({
+    place: Object.fromEntries(PLACE_ORDER.map((p) => [p.id, t('place_' + p.id)])),
+    way: Object.fromEntries(PLACE_ORDER.map((p) => [p.id, t('way_' + p.id)])),
+    more: moreRooms,
+    placesTitle: t('placesTitle'),
+    howTitle: t('howTitle'),
+    how: [t('howLine1', { r: rooms.length }), t('howLine2', { n: SETTINGS.QUESTIONS_PER_QUIZ, k: SETTINGS.CORRECT_TO_UNLOCK }), t('howLine3'), t('howLine4')],
+  });
   space.refreshSigns({ space: t('spaceName') });
   race.refreshSigns({ start: t('raceStart'), finish: t('raceFinish'), lake: t('raceSign') }, pick);
   park.refreshSigns({ park: t('parkName'), toPark: t('parkSign'), parkRides: t('parkBoard') });
@@ -1134,7 +1163,9 @@ function startPlaying() {
   const secret = rooms.find((r) => r.id === secretRoomId());
   setTimeout(() => toast(t('secretToday', { room: `${secret.emoji} ${pick(secret.name)}` })), daily ? 4000 : 1500);
   if (rooms.some((r) => roomState(r.id).unlocked)) callFromTerrace(60000);
-  if (daily) {
+  // first time: the name and the How-to-play guide, then the daily bonus
+  firstTimeSteps(() => {
+    if (!daily) return;
     openDaily(daily, () => {
       const before = save.coins;
       claimDaily();
@@ -1143,7 +1174,7 @@ function startPlaying() {
       confetti(100, ['🪙', '🔥', '⭐']);
       setControlsEnabled(true);
     });
-  }
+  });
 }
 
 function setupA11y() {
@@ -1255,6 +1286,7 @@ function setupUI() {
     $('set-voice').checked = save.settings.voice !== false;
     $('set-read').checked = !!save.settings.readAloud;
     $('set-close').checked = !!save.settings.closeView;
+    showNameInSettings();
     hidePrompt();
     setControlsEnabled(false);
     $('settings').classList.remove('hidden');

@@ -467,6 +467,44 @@ export function labelTexture(lines, bg = '#ffffff', fg = '#3a2a1a', w = 512, h =
   return tex;
 }
 
+// A big notice board: a title and several rows, each with its own colours, in large clear letters.
+// rows: [{ text, bg, fg }]
+export function boardTexture(title, rows, w = 1024, rowH = 120) {
+  const top = 130, pad = 18;
+  const h = top + rows.length * rowH + pad;
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  const g = c.getContext('2d');
+  g.fillStyle = '#fff8e6';
+  roundRect(g, 4, 4, w - 8, h - 8, 34);
+  g.fill();
+  g.lineWidth = 10; g.strokeStyle = '#6b3518'; g.stroke();
+  g.textBaseline = 'middle';
+  if ('wordSpacing' in g) g.wordSpacing = '6px';
+  const fit = (text, size, max) => {
+    let fs = size;
+    g.font = `700 ${fs}px ${FONT}`;
+    while (g.measureText(text).width > max && fs > 14) { fs -= 2; g.font = `700 ${fs}px ${FONT}`; }
+  };
+  g.fillStyle = '#3a2a1a';
+  g.textAlign = 'center';
+  fit(title, 66, w - 60);
+  g.fillText(title, w / 2, top / 2 + 6);
+  rows.forEach((r, i) => {
+    const y = top + i * rowH;
+    g.fillStyle = r.bg;
+    roundRect(g, pad + 8, y + 6, w - 2 * pad - 16, rowH - 12, 22);
+    g.fill();
+    g.fillStyle = r.fg;
+    g.textAlign = 'left';
+    fit(r.text, 54, w - 2 * pad - 60);
+    g.fillText(r.text, pad + 34, y + rowH / 2 + 4);
+  });
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return { tex, aspect: w / h };
+}
+
 export function emojiTexture(emoji) {
   const c = document.createElement('canvas');
   c.width = c.height = 128;

@@ -38,6 +38,7 @@
       <div class="start-btns">
         <button id="play-btn" class="big-btn" data-i18n="play">Let's play!</button>
         <button id="practice-btn" class="soft-btn big-soft" data-i18n="practiceMode">Quiz only mode</button>
+        <button id="guide-btn" class="soft-btn small" data-i18n="guideBtn">How to play</button>
         <button id="about-btn" class="soft-btn small" data-i18n="about">About</button>
         <button id="news-btn" class="soft-btn small"><span data-i18n="whatsNew">What's new?</span><span id="news-mark" class="hidden"><span class="sr-only" data-i18n="whatsNewFresh"></span></span></button>
       </div>
@@ -198,6 +199,10 @@
   <div id="settings" class="overlay hidden">
     <div class="modal-card">
       <h2 data-i18n="settings">Settings</h2>
+      <div class="row"><label for="set-name" data-i18n="nameSetting"></label>
+        <input type="text" id="set-name" class="name-input" maxlength="20" autocomplete="off" spellcheck="false">
+        <button class="soft-btn small" id="set-name-save" data-i18n="nameSave"></button>
+      </div>
       <label class="row"><input type="checkbox" id="set-low"> <span data-i18n="lowGraphics"></span></label>
       <label class="row"><input type="checkbox" id="set-sound"> <span data-i18n="sound"></span></label>
       <label class="row"><input type="checkbox" id="set-voice"> <span data-i18n="voiceSetting"></span></label>
@@ -217,6 +222,7 @@
         <button class="soft-btn small" data-lang="en">English</button>
       </div>
       <div class="btn-row">
+        <button class="soft-btn" id="settings-guide" data-i18n="guideBtn"></button>
         <button class="soft-btn" id="settings-about" data-i18n="about"></button>
         <button class="soft-btn" id="settings-news" data-i18n="whatsNew"></button>
         <button class="soft-btn" id="credits-btn" data-i18n="credits"></button>
@@ -284,6 +290,27 @@
       <h2 data-i18n="whatsNew">What's new?</h2>
       <div id="news-list"></div>
       <button class="big-btn" data-close="news" data-i18n="close"></button>
+    </div>
+  </div>
+
+  <div id="guide" class="overlay hidden">
+    <div class="modal-card">
+      <h2 data-i18n="guideTitle"></h2>
+      <ul id="guide-list"></ul>
+      <button class="big-btn" id="guide-ok" data-i18n="guideOk"></button>
+    </div>
+  </div>
+
+  <div id="name-ask" class="overlay hidden">
+    <div class="modal-card center">
+      <h2 data-i18n="nameTitle"></h2>
+      <p data-i18n="nameText"></p>
+      <label for="name-input" class="name-label" data-i18n="nameLabel"></label>
+      <input type="text" id="name-input" class="name-input" maxlength="20" autocomplete="off" spellcheck="false">
+      <div class="btn-row">
+        <button class="big-btn" id="name-save" data-i18n="nameSave"></button>
+        <button class="soft-btn" id="name-later" data-i18n="nameLater"></button>
+      </div>
     </div>
   </div>
 

@@ -4,7 +4,7 @@
 export const IS_TEST = location.pathname.includes('-test/');
 // Each new test version starts from nothing, so testers see the new things from the beginning
 // instead of gates and doors they opened in an older version. Change TEST_ROUND with each test release.
-const TEST_ROUND = '2026-11-22';
+const TEST_ROUND = '2026-11-22b';
 const KEY = IS_TEST ? `magicHomeTour.test.save.${TEST_ROUND}` : 'magicHomeTour.save.v1';
 if (IS_TEST) {
   try { for (const k of Object.keys(localStorage)) if (k.startsWith('magicHomeTour.test.save.') && k !== KEY) localStorage.removeItem(k); } catch (e) { /* storage may be blocked */ }

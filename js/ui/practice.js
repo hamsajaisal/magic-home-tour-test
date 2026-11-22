@@ -8,6 +8,7 @@ import { openQuiz } from './quiz.js';
 import { shortText } from '../progress.js';
 import { LETTERS } from '../question-format.js';
 import { play } from '../audio.js';
+import { childName } from './guide.js';
 
 const $ = (id) => document.getElementById(id);
 const SUBJECTS = ['science', 'social', 'maths', 'malayalam', 'english', 'gk'];
@@ -145,7 +146,8 @@ function report(S, choice) {
   const emoji = pct >= 80 ? '🏆' : pct >= 50 ? '👍' : '💪';
   const title = t('practiceScore', { s: S.score, n, p: pct });
   const text = t(pct >= 80 ? 'practiceGreat' : pct >= 50 ? 'practiceGood' : 'practiceKeepGoing');
-  return { emoji, title, text, fill: (box) => fillReport(box, S, choice) };
+  const name = childName();
+  return { emoji, title, text: name ? `${name}, ${text}` : text, fill: (box) => fillReport(box, S, choice) };
 }
 
 function fillReport(box, S, choice) {

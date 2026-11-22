@@ -9,6 +9,10 @@ export const SETTINGS = {
   QUESTIONS_PER_QUIZ: 5,      // how many questions at each door (e.g. 5 or 10)
   CORRECT_TO_UNLOCK: 4,       // how many must be right to open the door (e.g. 4 or 7)
 
+  // ---- Praise with the child's name (only when the child gave a name) ----
+  NAME_PRAISE_CHANCE: 0.33,   // share of right answers that use the name (every 3rd right in a row always does)
+  NAME_HINT_CHANCE: 0.3,      // share of first wrong tries that say "never mind, <name>"
+
   // ---- Rewards ----
   // Each subject has a level. How much of a round is easy / hard at levels 1, 2 and 3 (the rest is medium).
   LEVEL_MIX: [{ easy: 0.4, hard: 0 }, { easy: 0.2, hard: 0.2 }, { easy: 0, hard: 0.4 }],

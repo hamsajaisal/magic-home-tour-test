@@ -2,15 +2,16 @@
 // always has one new thing to look forward to instead of everything at once.
 // A place the child has already visited stays open (children who played before lose nothing).
 // While a place is closed, a striped barrier with a lock and "open N rooms" stands in its way.
-// One signpost in the front yard points to every place (closed ones show a lock).
+// Two boards in the front yard: one says how places open (each room inside opens the next place),
+// the other lists every place with its direction (closed ones show a lock and how many more rooms).
 import * as THREE from 'three';
-import { mat, labelTexture, emojiTexture } from './house.js';
+import { mat, labelTexture, emojiTexture, boardTexture } from './house.js';
 
 export const PLACE_ORDER = [
   { id: 'terrace', rooms: 1, visited: 'terraceVisited', emoji: '☀️', arrow: '↗' },
   { id: 'forest', rooms: 2, visited: 'forestVisited', emoji: '🌳', arrow: '⬅' },
   { id: 'park', rooms: 3, visited: 'parkVisited', emoji: '🎡', arrow: '➡' },
-  { id: 'race', rooms: 4, visited: 'raceVisited', emoji: '🚣', arrow: '⬆' },
+  { id: 'race', rooms: 4, visited: 'raceVisited', emoji: '🚣', arrow: '↖' },
   { id: 'space', rooms: 5, visited: 'spaceVisited', emoji: '🚀', arrow: '➡' },
 ];
 
@@ -67,31 +68,51 @@ export function createPlaces({ scene, W }) {
     barriers[id] = { g, sign, col };
   }
 
-  // ---------- the signpost in the front yard ----------
-  const post = new THREE.Group();
-  post.position.set(3.6, 0, 15.2);
-  root.add(post);
-  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.09, 3.4, 6), mat('#6b3518'));
-  pole.position.y = 1.7;
-  post.add(pole);
-  const top = new THREE.Sprite(new THREE.SpriteMaterial({ map: emojiTexture('🧭'), depthWrite: false }));
-  top.scale.set(0.7, 0.7, 1);
-  top.position.y = 3.75;
-  post.add(top);
-  const arms = PLACE_ORDER.map((p, i) => {
-    const m = label(2.6, 0.5, post);
-    const left = p.arrow === '⬅';
-    m.position.set(left ? -1.1 : 1.1, 3.05 - i * 0.58, 0.05);
-    m.rotation.z = left ? 0.03 : -0.03;
-    return m;
-  });
-  W.colliders.push({ minX: 3.45, maxX: 3.75, minZ: 15.05, maxZ: 15.35, on: true });
+  // ---------- two notice boards on either side of the path to the front steps ----------
+  // left: how places open (the rooms inside the house); right: every place with its direction.
+  const board = (x, z, turn) => {
+    const g = new THREE.Group();
+    g.position.set(x, 0, z);
+    g.rotation.y = turn;
+    root.add(g);
+    for (const s of [-1, 1]) {
+      const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.09, 1.3, 6), mat('#6b3518'));
+      leg.position.set(s * 0.95, 0.65, -0.03);
+      g.add(leg);
+    }
+    const face = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ transparent: true, side: THREE.DoubleSide }));
+    g.add(face);
+    W.colliders.push({ minX: x - 0.9, maxX: x + 0.9, minZ: z - 0.5, maxZ: z + 0.5, on: true });
+    return face;
+  };
+  const howBoard = board(-2.3, 12.7, 0.5);
+  const placeBoard = board(2.3, 12.7, -0.5);
+  const paintBoard = (face, title, rows, width = 2.2) => {
+    face.material.map?.dispose();
+    const { tex, aspect } = boardTexture(title, rows);
+    face.material.map = tex;
+    face.material.needsUpdate = true;
+    const h = width / aspect;
+    face.scale.set(width, h, 1);
+    face.position.set(0, 1.25 + h / 2, 0);
+  };
 
   const open = {};
+  let roomsNow = 0;
   return {
     isOpen: (id) => !!open[id],
+    // the first place still closed (the one the next room will open)
+    nextPlace: () => PLACE_ORDER.find((p) => !open[p.id]) || null,
+    // how many more rooms a place needs
+    roomsLeft: (id) => Math.max(1, PLACE_ORDER.find((p) => p.id === id).rooms - roomsNow),
+    // closed barriers, for the message shown when the child walks up to one
+    closedSpots: () => PLACE_ORDER.filter((p) => !open[p.id]).map((p) => {
+      const B = BARRIERS[p.id], mid = (B.a + B.b) / 2;
+      return { id: p.id, pos: B.ax === 'x' ? [mid, B.fixed] : [B.fixed, mid] };
+    }),
     // which places are open now; returns the ids that have just opened
     update(roomsOpen, stats) {
+      roomsNow = roomsOpen;
       const opened = [];
       for (const p of PLACE_ORDER) {
         const now = roomsOpen >= p.rooms || !!stats[p.visited];
@@ -103,11 +124,19 @@ export function createPlaces({ scene, W }) {
       }
       return opened;
     },
+    // names: { place: {id: name}, way: {id: where it is}, more: (n) => 'n more rooms', howTitle, how: [lines], placesTitle }
     refreshSigns(names) {
-      PLACE_ORDER.forEach((p, i) => {
+      const rows = PLACE_ORDER.map((p) => {
         const isOpen = !!open[p.id];
-        paint(arms[i], isOpen ? `${p.arrow} ${p.emoji} ${names.place[p.id]}` : `🔒 ${p.emoji} ${names.place[p.id]} · ${names.rooms(p.rooms)}`, isOpen ? '#2f7d3a' : '#8a8a8a');
-        paint(barriers[p.id].sign, [`🔒 ${names.place[p.id]}`, names.rooms(p.rooms)], '#ff3b30');
+        const left = Math.max(1, p.rooms - roomsNow);
+        return isOpen
+          ? { text: `${p.arrow} ${p.emoji} ${names.place[p.id]} – ${names.way[p.id]}`, bg: '#2f7d3a', fg: '#ffffff' }
+          : { text: `🔒 ${p.emoji} ${names.place[p.id]} – ${names.more(left)}`, bg: '#e4ddd0', fg: '#3a2a1a' };
+      });
+      paintBoard(placeBoard, names.placesTitle, rows);
+      paintBoard(howBoard, names.howTitle, names.how.map((text, i) => ({ text, bg: ['#fde68a', '#bfdbfe', '#fbcfe8'][i % 3], fg: '#3a2a1a' })));
+      PLACE_ORDER.forEach((p) => {
+        paint(barriers[p.id].sign, [`🔒 ${p.emoji} ${names.place[p.id]}`, names.more(Math.max(1, p.rooms - roomsNow))], '#ff3b30');
       });
     },
   };
